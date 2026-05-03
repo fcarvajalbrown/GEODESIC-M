@@ -90,47 +90,47 @@ Work through this in sequence. Do not jump ahead — each phase depends on the p
 
 **Phase 1 — Workspace & Core types (no deps)**
 1. `Cargo.toml` (workspace root)
-2. `crates/geodesic-core/Cargo.toml`
-3. `crates/geodesic-core/src/lib.rs`
-4. `crates/geodesic-core/src/error.rs`
-5. `crates/geodesic-core/src/state.rs`
-6. `crates/geodesic-core/src/atoms.rs`
-7. `crates/geodesic-core/src/params.rs`
-8. `crates/geodesic-core/src/topology.rs`
-9. `crates/geodesic-core/src/buffers.rs`
-10. `crates/geodesic-core/src/backend.rs`
+2. `geodesic-core/Cargo.toml`
+3. `geodesic-core/src/lib.rs`
+4. `geodesic-core/src/error.rs`
+5. `geodesic-core/src/state.rs`
+6. `geodesic-core/src/atoms.rs`
+7. `geodesic-core/src/params.rs`
+8. `geodesic-core/src/topology.rs`
+9. `geodesic-core/src/buffers.rs`
+10. `geodesic-core/src/backend.rs`
 
 **Phase 2 — I/O (parsers and writers)**
-11. `crates/geodesic-io/Cargo.toml`
-12. `crates/geodesic-io/src/lib.rs`
-13. `crates/geodesic-io/src/config.rs` (TOML → SimParams)
-14. `crates/geodesic-io/src/prmtop.rs` (AMBER prmtop → AtomData + BondedTopology)
-15. `crates/geodesic-io/src/inpcrd.rs` (AMBER inpcrd → SimState)
-16. `crates/geodesic-io/src/dcd.rs` (DCD trajectory writer)
-17. `crates/geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
-18. `crates/geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
+11. `geodesic-io/Cargo.toml`
+12. `geodesic-io/src/lib.rs`
+13. `geodesic-io/src/config.rs` (TOML → SimParams)
+14. `geodesic-io/src/prmtop.rs` (AMBER prmtop → AtomData + BondedTopology)
+15. `geodesic-io/src/inpcrd.rs` (AMBER inpcrd → SimState)
+16. `geodesic-io/src/dcd.rs` (DCD trajectory writer)
+17. `geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
+18. `geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
 
 **Phase 3 — Engine (force field + integrator)**
-19. `crates/geodesic-engine/Cargo.toml`
-20. `crates/geodesic-engine/src/lib.rs`
-21. `crates/geodesic-engine/src/neighbor.rs` (Verlet list)
-22. `crates/geodesic-engine/src/force/mod.rs`
-23. `crates/geodesic-engine/src/force/nonbonded.rs` (LJ, SoA, AVX2)
-24. `crates/geodesic-engine/src/force/bonded.rs` (bonds, angles, dihedrals)
-25. `crates/geodesic-engine/src/constraint.rs` (Lagrangian solver)
-26. `crates/geodesic-engine/src/integrator.rs` (Geodesic BAB loop)
-27. `crates/geodesic-engine/src/cpu_backend.rs` (CpuBackend impl)
+19. `geodesic-engine/Cargo.toml`
+20. `geodesic-engine/src/lib.rs`
+21. `geodesic-engine/src/neighbor.rs` (Verlet list)
+22. `geodesic-engine/src/force/mod.rs`
+23. `geodesic-engine/src/force/nonbonded.rs` (LJ, SoA, AVX2)
+24. `geodesic-engine/src/force/bonded.rs` (bonds, angles, dihedrals)
+25. `geodesic-engine/src/constraint.rs` (Lagrangian solver)
+26. `geodesic-engine/src/integrator.rs` (Geodesic BAB loop)
+27. `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl)
 
 **Phase 4 — Binary (CLI)**
-28. `crates/geodesic/Cargo.toml`
-29. `crates/geodesic/src/main.rs` (`energy` + `run` subcommands)
+28. `geodesic/Cargo.toml`
+29. `geodesic/src/main.rs` (`energy` + `run` subcommands)
 
 **Tests** (add alongside Phase 3)
-- `crates/geodesic-engine/tests/fixtures/` — small prmtop/inpcrd for LJ pair, harmonic dimer
-- `crates/geodesic-engine/tests/gradient_check.rs`
-- `crates/geodesic-engine/tests/newton_third_law.rs`
-- `crates/geodesic-engine/tests/energy_conservation.rs`
-- `crates/geodesic-engine/tests/determinism.rs`
+- `geodesic-engine/tests/fixtures/` — small prmtop/inpcrd for LJ pair, harmonic dimer
+- `geodesic-engine/tests/gradient_check.rs`
+- `geodesic-engine/tests/newton_third_law.rs`
+- `geodesic-engine/tests/energy_conservation.rs`
+- `geodesic-engine/tests/determinism.rs`
 
 ---
 

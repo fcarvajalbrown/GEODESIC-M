@@ -491,18 +491,17 @@ Heavy optional dependencies (wgpu, ndarray-linalg, egui, Ripser FFI) are isolate
 
 ```
 geodesic-m/
-├── Cargo.toml                      ← workspace root; no src/
+├── Cargo.toml              ← workspace root; no src/
 ├── Cargo.lock
 ├── docs/
 │   └── SAD.md
-└── crates/
-    ├── geodesic-core/              ← shared types, traits, errors — no heavy deps
-    ├── geodesic-engine/            ← force field + integrator + CPU backend
-    ├── geodesic-gpu/               ← GPU backend (feature = "gpu")
-    ├── geodesic-topo/              ← PSL + Zigzag pipeline (feature = "topo")
-    ├── geodesic-io/                ← PDB/DCD/JSON file I/O
-    ├── geodesic-gui/               ← wgpu renderer + export UI (feature = "gui")
-    └── geodesic/                   ← binary: CLI, backend selection, orchestration
+├── geodesic-core/          ← shared types, traits, errors — no heavy deps
+├── geodesic-engine/        ← force field + integrator + CPU backend
+├── geodesic-gpu/           ← GPU backend (feature = "gpu")
+├── geodesic-topo/          ← PSL + Zigzag pipeline (feature = "topo")
+├── geodesic-io/            ← PDB/DCD/JSON file I/O
+├── geodesic-gui/           ← wgpu renderer + export UI (feature = "gui")
+└── geodesic/               ← binary: CLI, backend selection, orchestration
 ```
 
 ---
@@ -758,23 +757,23 @@ No `tokio` or async runtime anywhere — the simulation is synchronous CPU work;
 ```toml
 [workspace]
 members = [
-    "crates/geodesic-core",
-    "crates/geodesic-engine",
-    "crates/geodesic-gpu",
-    "crates/geodesic-topo",
-    "crates/geodesic-io",
-    "crates/geodesic-gui",
-    "crates/geodesic",
+    "geodesic-core",
+    "geodesic-engine",
+    "geodesic-gpu",
+    "geodesic-topo",
+    "geodesic-io",
+    "geodesic-gui",
+    "geodesic",
 ]
 resolver = "2"
 
 [workspace.dependencies]
-geodesic-core   = { path = "crates/geodesic-core" }
-geodesic-engine = { path = "crates/geodesic-engine" }
-geodesic-gpu    = { path = "crates/geodesic-gpu",  optional = true }
-geodesic-topo   = { path = "crates/geodesic-topo", optional = true }
-geodesic-io     = { path = "crates/geodesic-io" }
-geodesic-gui    = { path = "crates/geodesic-gui",  optional = true }
+geodesic-core   = { path = "geodesic-core" }
+geodesic-engine = { path = "geodesic-engine" }
+geodesic-gpu    = { path = "geodesic-gpu",  optional = true }
+geodesic-topo   = { path = "geodesic-topo", optional = true }
+geodesic-io     = { path = "geodesic-io" }
+geodesic-gui    = { path = "geodesic-gui",  optional = true }
 
 rayon             = "1"
 wgpu              = "22"
