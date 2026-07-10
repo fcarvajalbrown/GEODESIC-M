@@ -7,7 +7,9 @@ use crate::state::SimState;
 /// Selected once at startup; the simulation loop never inspects the
 /// concrete type behind Box<dyn ComputeBackend>.
 pub trait ComputeBackend: Send {
-    fn build_neighbor_list(&mut self, state: &SimState, params: &SimParams);
+    // &mut SimState: rebuild wraps atom positions into [0, box_size) per
+    // SAD.md §2.4, so it must be able to mutate positions, not just read them.
+    fn build_neighbor_list(&mut self, state: &mut SimState, params: &SimParams);
     fn compute_forces(&mut self, state: &SimState) -> &ForceBuffer;
     fn geodesic_drift(&mut self, state: &mut SimState, dt: f64) -> Result<(), ConvergenceError>;
     fn reduce_forces(&self) -> ForceBuffer;
