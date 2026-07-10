@@ -1,3 +1,5 @@
+mod fixed_width;
+
 pub mod config;
 pub mod prmtop;
 pub mod inpcrd;

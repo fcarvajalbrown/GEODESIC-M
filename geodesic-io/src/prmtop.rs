@@ -1,3 +1,4 @@
+use crate::fixed_width::chunk_fields;
 use geodesic_core::{AtomData, AtomMeta, BondedTopology, ConfigError, Element};
 use std::collections::HashMap;
 
@@ -90,20 +91,6 @@ impl Sections {
             })
             .collect()
     }
-}
-
-/// Slices `raw` into `count` fields of exactly `width` characters each.
-/// Errors if `raw` is shorter than `count * width` characters.
-fn chunk_fields(raw: &str, width: usize, count: usize) -> Vec<&str> {
-    let bytes = raw.as_bytes();
-    let mut fields = Vec::with_capacity(count);
-    for i in 0..count {
-        let start = i * width;
-        let end = (start + width).min(bytes.len());
-        let field = if start < bytes.len() { &raw[start..end] } else { "" };
-        fields.push(field);
-    }
-    fields
 }
 
 fn infer_element(name: &[u8; 4]) -> Element {
