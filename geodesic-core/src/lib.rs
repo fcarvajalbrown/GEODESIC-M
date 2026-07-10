@@ -7,7 +7,8 @@ pub mod buffers;
 pub mod backend;
 
 pub use error::{
-    Axis, BackendError, ConfigError, ConvergenceError, NumericalError, SimError, TopologyError,
+    Axis, BackendError, ConfigError, ConvergenceError, IoError, NumericalError, SimError,
+    TopologyError,
 };
 pub use state::SimState;
 pub use atoms::{AtomData, AtomMeta, Element};
