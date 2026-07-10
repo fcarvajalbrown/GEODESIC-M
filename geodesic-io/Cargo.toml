@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 geodesic-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }

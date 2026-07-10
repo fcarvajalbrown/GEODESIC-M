@@ -1,1 +1,6 @@
-// placeholder — implemented in Phase 2 (ROADMAP.md v0.2)
+pub mod config;
+pub mod prmtop;
+pub mod inpcrd;
+pub mod dcd;
+pub mod export;
+pub mod pdb;
