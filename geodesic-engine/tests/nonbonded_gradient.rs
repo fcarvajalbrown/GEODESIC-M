@@ -41,7 +41,10 @@ fn potential_at(r: f64, r_cutoff: f64, r_switch: f64) -> f64 {
     let mut fx = vec![0.0; 2];
     let mut fy = vec![0.0; 2];
     let mut fz = vec![0.0; 2];
-    compute_pair_forces(&state, &atoms, &list, box_size, &mut fx, &mut fy, &mut fz)
+    compute_pair_forces(
+        &state, &atoms, &list.pair_i, &list.pair_j, list.r_cutoff, list.r_switch, box_size,
+        &mut fx, &mut fy, &mut fz,
+    )
 }
 
 fn analytic_force_x1(r: f64, r_cutoff: f64, r_switch: f64) -> f64 {
@@ -51,7 +54,10 @@ fn analytic_force_x1(r: f64, r_cutoff: f64, r_switch: f64) -> f64 {
     let mut fx = vec![0.0; 2];
     let mut fy = vec![0.0; 2];
     let mut fz = vec![0.0; 2];
-    compute_pair_forces(&state, &atoms, &list, box_size, &mut fx, &mut fy, &mut fz);
+    compute_pair_forces(
+        &state, &atoms, &list.pair_i, &list.pair_j, list.r_cutoff, list.r_switch, box_size,
+        &mut fx, &mut fy, &mut fz,
+    );
     fx[1]
 }
 
@@ -109,6 +115,9 @@ fn newtons_third_law_holds() {
     let mut fx = vec![0.0; 2];
     let mut fy = vec![0.0; 2];
     let mut fz = vec![0.0; 2];
-    compute_pair_forces(&state, &atoms, &list, box_size, &mut fx, &mut fy, &mut fz);
+    compute_pair_forces(
+        &state, &atoms, &list.pair_i, &list.pair_j, list.r_cutoff, list.r_switch, box_size,
+        &mut fx, &mut fy, &mut fz,
+    );
     assert!((fx[0] + fx[1]).abs() < 1e-12);
 }

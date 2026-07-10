@@ -1,7 +1,7 @@
 /// One per thread, length N, allocated once at startup and zeroed at the
 /// start of each step. The master thread reduces all buffers into
 /// SimState::force_{x,y,z} in thread-index order (deterministic).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ForceBuffer {
     pub fx: Vec<f64>, // length N
     pub fy: Vec<f64>,
