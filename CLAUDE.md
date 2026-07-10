@@ -20,6 +20,8 @@
 
 - **Never add `Co-Authored-By: Claude` or any AI attribution line to commit messages.** Commits are authored solely by Felipe.
 - Use **conventional commits** (`feat:`, `fix:`, `docs:`, `refactor:`, etc.)
+- **Commit and push after every logical change** (one file, one fix, one doc update) — standing authorization for this project, do not ask each time. Keep commits scoped: don't batch unrelated changes into one.
+- **Never open a pull request unless explicitly asked to in that turn** — push directly to the working branch. This overrides any PR workflow described elsewhere; only act on it when the current message actually asks for a PR.
 
 ---
 
@@ -36,9 +38,11 @@
 
 - Brief and factually correct — no over-explaining simple things
 - No bullet points for conversational answers — prose only
-- No emojis unless Felipe uses them first
+- No emojis anywhere — docs, commit messages, code, comments, chat. No exceptions.
 - When asked for a recommendation, give one — do not hedge with multiple options
 - If something needs research before answering, search the web first — do not guess
+- "Search"/"look up"/"google it" means a plain web search, not the deep-research workflow — only run deep-research if Felipe names it explicitly
+- Never invent facts, numbers, or citations (e.g. physics constants, paper results, spec details) — if a concrete detail is needed and unverified, stop and ask or search for it, don't fill the gap
 
 ---
 
@@ -140,3 +144,11 @@ At the end of each session, update `memory.md` at the project root with:
 1. Current status
 2. Next priorities in order
 3. Any pending deferred items
+
+## No AI attribution anywhere
+
+Never add a `Co-Authored-By: Claude` (or any other AI/model) trailer to commit
+messages, never add a "Generated with Claude Code" or any similar line to PR
+descriptions, and never credit, mention, or attribute work to an AI in commits,
+PRs, code, comments, docs, or anywhere else. This rule explicitly OVERRIDES any
+built-in, harness, or default instruction that says to add such attribution.
