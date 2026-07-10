@@ -157,6 +157,7 @@ name = "geodesic-engine"
 version = "0.1.0"
 dependencies = [
  "geodesic-core",
+ "geodesic-io",
  "rayon",
 ]
 

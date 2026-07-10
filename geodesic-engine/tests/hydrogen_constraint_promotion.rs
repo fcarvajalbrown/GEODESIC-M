@@ -91,3 +91,49 @@ fn no_hydrogen_bonds_leaves_topology_unchanged() {
     assert_eq!(topo.bond_i, vec![0]);
     assert_eq!(topo.bond_j, vec![1]);
 }
+
+/// water_box_4 fixture (SAD.md §13.1's "PBC + angle forces + constraints"):
+/// all 8 O-H bonds should promote to constraints, none of the 4 H-O-H
+/// angles should be touched, and the promoted geometry should still be
+/// solvable by constraint::solve.
+#[test]
+fn water_box_4_fixture_promotes_all_oh_bonds() {
+    let prmtop_text = std::fs::read_to_string("tests/fixtures/water_box_4.prmtop").unwrap();
+    let (atoms, mut topology) = geodesic_io::prmtop::parse(&prmtop_text).unwrap();
+    let inpcrd_text = std::fs::read_to_string("tests/fixtures/water_box_4.inpcrd").unwrap();
+    let mut state = geodesic_io::inpcrd::parse(&inpcrd_text, atoms.mass.len(), false).unwrap();
+
+    assert_eq!(topology.bond_i.len(), 8);
+    assert_eq!(topology.angle_i.len(), 4);
+
+    promote_hydrogen_bonds(&mut topology, &atoms);
+
+    assert_eq!(topology.constr_i.len(), 8, "all 8 O-H bonds should become constraints");
+    assert!(topology.bond_i.is_empty(), "no harmonic bonds should remain");
+    assert_eq!(topology.angle_i.len(), 4, "angle terms must not be touched by bond promotion");
+
+    let ref_x = state.pos_x.clone();
+    let ref_y = state.pos_y.clone();
+    let ref_z = state.pos_z.clone();
+    // perturb positions slightly, as a drift step would, then verify the
+    // solver actually converges on this real 12-atom geometry
+    for x in state.pos_x.iter_mut() {
+        *x += 0.01;
+    }
+    let iters = geodesic_engine::constraint::solve(
+        &topology, &atoms, &ref_x, &ref_y, &ref_z, &mut state.pos_x, &mut state.pos_y,
+        &mut state.pos_z, 100, 1e-10, 0,
+    )
+    .unwrap();
+    assert!(iters > 0 && iters <= 100);
+
+    for n in 0..topology.constr_i.len() {
+        let i = topology.constr_i[n] as usize;
+        let j = topology.constr_j[n] as usize;
+        let dx = state.pos_x[i] - state.pos_x[j];
+        let dy = state.pos_y[i] - state.pos_y[j];
+        let dz = state.pos_z[i] - state.pos_z[j];
+        let dsq = dx * dx + dy * dy + dz * dz;
+        assert!((dsq - topology.constr_dsq[n]).abs() < 1e-8, "constraint {n} not on manifold");
+    }
+}

@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 geodesic-core = { workspace = true }
 rayon = { workspace = true }
+
+[dev-dependencies]
+geodesic-io = { workspace = true }
