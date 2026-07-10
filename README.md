@@ -1,5 +1,9 @@
 # GEODESIC-M
 
+<p align="center">
+  <img src="assets/logo.png" alt="GEODESIC-M — a trajectory curving through a warped energy landscape" width="420">
+</p>
+
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/fcarvajalbrown/GEODESIC-M)](https://github.com/fcarvajalbrown/GEODESIC-M/releases)
 [![Rust](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
