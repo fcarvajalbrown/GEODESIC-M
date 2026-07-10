@@ -26,11 +26,21 @@ Full architecture: [`docs/SAD.md`](docs/SAD.md)
 
 | Milestone | Description | Status |
 |---|---|---|
-| M1 | CPU-only headless simulation (Rayon + SIMD) | In progress |
+| M1 | CPU-only headless simulation (Rayon + SIMD) | In progress — v0.3 of 4 |
 | M2 | GPU backend (wgpu compute shaders) | Planned |
 | M3 | Hybrid CPU+GPU | Planned |
 | M4 | 3D viewer + live trajectory streaming | Planned |
 | M5 | Data export UI | Planned |
+
+There is no working simulation yet — see [`ROADMAP.md`](ROADMAP.md) for the
+version-by-version breakdown and current state, and
+[`memory.md`](memory.md) for a detailed session handoff (what's built,
+what's broken, what's next). As of this writing: file I/O (AMBER
+prmtop/inpcrd parsing, DCD/CSV/JSON/PDB writing) works and is tested. The
+force field is partially done and gradient-tested (non-bonded LJ, bonds,
+angles); dihedral forces are implemented but known incorrect for general
+geometry (see `memory.md`). The constraint solver, integrator, and CLI
+don't exist yet.
 
 ---
 
@@ -54,7 +64,10 @@ cargo build --release --features gui     # 3D viewer
 
 ---
 
-## Usage (M1)
+## Usage (M1) — target interface, not yet implemented
+
+The CLI binary is currently a stub (`fn main() {}`) — this is the
+interface v0.4 will ship, not something you can run today:
 
 ```sh
 # Compute total energy — required before a run (defines the Jacobi metric)

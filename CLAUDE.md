@@ -100,45 +100,50 @@ The canonical architecture is **SAD.md**. All design decisions trace back to it.
 ## Implementation File Order (M1)
 
 Work through this in sequence. Do not jump ahead — each phase depends on the previous.
+Status legend: [x] done and tested, [~] partial/broken (see memory.md), [ ] not started.
 
-**Phase 1 — Workspace & Core types (no deps)**
-1. `Cargo.toml` (workspace root)
-2. `geodesic-core/Cargo.toml`
-3. `geodesic-core/src/lib.rs`
-4. `geodesic-core/src/error.rs`
-5. `geodesic-core/src/state.rs`
-6. `geodesic-core/src/atoms.rs`
-7. `geodesic-core/src/params.rs`
-8. `geodesic-core/src/topology.rs`
-9. `geodesic-core/src/buffers.rs`
-10. `geodesic-core/src/backend.rs`
+**Phase 1 — Workspace & Core types (no deps) — DONE**
+1. [x] `Cargo.toml` (workspace root)
+2. [x] `geodesic-core/Cargo.toml`
+3. [x] `geodesic-core/src/lib.rs`
+4. [x] `geodesic-core/src/error.rs`
+5. [x] `geodesic-core/src/state.rs`
+6. [x] `geodesic-core/src/atoms.rs`
+7. [x] `geodesic-core/src/params.rs`
+8. [x] `geodesic-core/src/topology.rs`
+9. [x] `geodesic-core/src/buffers.rs`
+10. [x] `geodesic-core/src/backend.rs`
 
-**Phase 2 — I/O (parsers and writers)**
-11. `geodesic-io/Cargo.toml`
-12. `geodesic-io/src/lib.rs`
-13. `geodesic-io/src/config.rs` (TOML → SimParams)
-14. `geodesic-io/src/prmtop.rs` (AMBER prmtop → AtomData + BondedTopology)
-15. `geodesic-io/src/inpcrd.rs` (AMBER inpcrd → SimState)
-16. `geodesic-io/src/dcd.rs` (DCD trajectory writer)
-17. `geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
-18. `geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
+**Phase 2 — I/O (parsers and writers) — DONE**
+11. [x] `geodesic-io/Cargo.toml`
+12. [x] `geodesic-io/src/lib.rs`
+13. [x] `geodesic-io/src/config.rs` (TOML → SimParams)
+14. [x] `geodesic-io/src/prmtop.rs` (AMBER prmtop → AtomData + BondedTopology)
+15. [x] `geodesic-io/src/inpcrd.rs` (AMBER inpcrd → SimState)
+16. [x] `geodesic-io/src/dcd.rs` (DCD trajectory writer)
+17. [x] `geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
+18. [x] `geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
 
-**Phase 3 — Engine (force field + integrator)**
-19. `geodesic-engine/Cargo.toml`
-20. `geodesic-engine/src/lib.rs`
-21. `geodesic-engine/src/neighbor.rs` (Verlet list)
-22. `geodesic-engine/src/force/mod.rs`
-23. `geodesic-engine/src/force/nonbonded.rs` (LJ, SoA, AVX2)
-24. `geodesic-engine/src/force/bonded.rs` (bonds, angles, dihedrals)
-25. `geodesic-engine/src/constraint.rs` (Lagrangian solver)
-26. `geodesic-engine/src/integrator.rs` (Geodesic BAB loop)
-27. `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl)
+**Phase 3 — Engine (force field + integrator) — IN PROGRESS, see memory.md**
+19. [x] `geodesic-engine/Cargo.toml`
+20. [x] `geodesic-engine/src/lib.rs`
+21. [x] `geodesic-engine/src/neighbor.rs` (Verlet list)
+22. [x] `geodesic-engine/src/force/mod.rs`
+23. [x] `geodesic-engine/src/force/nonbonded.rs` (LJ, SoA, AVX2)
+24. [~] `geodesic-engine/src/force/bonded.rs` (bonds/angles done and tested;
+    dihedral known broken for general geometry — do not use, see the doc
+    comment on `compute_dihedral_forces` and memory.md)
+25. [ ] `geodesic-engine/src/constraint.rs` (Lagrangian solver) — placeholder only
+26. [ ] `geodesic-engine/src/integrator.rs` (Geodesic BAB loop) — placeholder only
+27. [ ] `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl) — placeholder only
 
-**Phase 4 — Binary (CLI)**
-28. `geodesic/Cargo.toml`
-29. `geodesic/src/main.rs` (`energy` + `run` subcommands)
+**Phase 4 — Binary (CLI) — NOT STARTED**
+28. [ ] `geodesic/Cargo.toml` (manifest exists, correct)
+29. [ ] `geodesic/src/main.rs` (`energy` + `run` subcommands) — still `fn main() {}`
 
-**Tests** (add alongside Phase 3)
+**Tests** (add alongside Phase 3) — ad-hoc equivalents exist and pass
+(`tests/neighbor_list.rs`, `tests/nonbonded_gradient.rs`,
+`tests/bonded_gradient.rs`), not yet consolidated into these exact files:
 - `geodesic-engine/tests/fixtures/` — small prmtop/inpcrd for LJ pair, harmonic dimer
 - `geodesic-engine/tests/gradient_check.rs`
 - `geodesic-engine/tests/newton_third_law.rs`
@@ -153,6 +158,10 @@ At the end of each session, update `memory.md` at the project root with:
 1. Current status
 2. Next priorities in order
 3. Any pending deferred items
+
+`memory.md` currently reflects a session stopped mid-Phase-3 (dihedral
+forces broken, constraint/integrator/cpu_backend not started) — read it
+before resuming engine work.
 
 ## No AI attribution anywhere
 
