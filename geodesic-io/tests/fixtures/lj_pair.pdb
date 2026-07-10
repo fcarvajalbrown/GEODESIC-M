@@ -1,0 +1,4 @@
+HEADER    TEST FIXTURE
+ATOM      1  AR1 RES A   1       0.000   0.000   0.000  1.00  0.00          AR
+ATOM      2  AR2 RES A   1       3.000   0.000   0.000  1.00  0.00          AR
+END
