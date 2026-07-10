@@ -55,7 +55,7 @@ A real AmberTools-generated `ala_dipeptide.prmtop` is still needed before
 v0.3's physics tests (§13.1) can check force-field *values* against
 literature, not just parser correctness.
 
-## v0.3 — Force field + CPU integrator (`geodesic-engine`) — IN PROGRESS, PAUSED
+## v0.3 — Force field + CPU integrator (`geodesic-engine`) — CORE DONE, BLOCKED ON ala_dipeptide
 
 CLAUDE.md Phase 3. The physics: Verlet neighbor lists, bonded (bond/angle/
 dihedral) and non-bonded (LJ) forces in SoA, the Lagrangian constraint solver,
@@ -65,34 +65,52 @@ after it.
 
 - [x] `src/neighbor.rs` — Verlet list, PBC wrap, min-image, bonded exclusions
 - [x] `src/force/nonbonded.rs` — LJ + quintic switching function
-- [x] `src/force/bonded.rs` — bond and angle forces (dihedral **known broken**,
-      see the doc comment on `compute_dihedral_forces` — f_i/f_l correct,
-      f_j/f_k formula is structurally incomplete for general geometry)
-- [ ] `src/constraint.rs`, `src/integrator.rs`, `src/cpu_backend.rs` — not
-      started (placeholder files only, so the workspace still compiles)
-- [ ] Fixtures: `lj_pair`, `harmonic_dimer`, `water_box_4`, `ala_dipeptide` —
-      not started; ad-hoc unit-test fixtures exist inline in
-      `tests/neighbor_list.rs`, `tests/nonbonded_gradient.rs`,
-      `tests/bonded_gradient.rs` but don't match SAD.md §13.1's named files
-- [ ] `tests/gradient_check.rs` (§13.2) — the *pattern* exists (per-file
-      finite-difference tests above), not yet consolidated into this
-      SAD.md-named file
-- [ ] `tests/newton_third_law.rs` (§13.3) — nonbonded has this inline
-      (`newtons_third_law_holds`); not yet a standalone file, not yet
-      covering bonded forces
-- [ ] `tests/energy_conservation.rs` (§13.4) — blocked on the integrator
-- [ ] `tests/determinism.rs` (§13.5) — blocked on the CPU backend
-- [ ] `tests/constraint_solver.rs` (§13.6) — blocked on the constraint solver
+- [x] `src/force/bonded.rs` — bond, angle, and dihedral forces, all
+      gradient-tested (the earlier dihedral f_j/f_k sign error is fixed —
+      see memory.md for the symbolic derivation used to verify it)
+- [x] `src/constraint.rs` — position (SHAKE) and velocity (RATTLE)
+      Lagrangian projection, Jacobi relaxation for determinism, plus
+      hydrogen-bond promotion (config-gated, default on)
+- [x] `src/integrator.rs` — Geodesic BAB half-kick + drift
+- [x] `src/cpu_backend.rs` — `ComputeBackend` impl, Rayon static strip
+      decomposition, deterministic reduction
+- [x] Fixtures: `lj_pair`, `harmonic_dimer`, `water_box_4` — real, verified
+      (water_box_4 is 4 actual TIP3P waters, parameters cross-checked
+      against the AMBER archive tip3p.frcmod thread and LAMMPS's TIP3P
+      table). `ala_dipeptide` still pending — Felipe is generating it via
+      AmberTools; can't be hand-typed (real 22-atom force field).
+- [x] `tests/fixture_gradient_check.rs` (§13.2) — runs on lj_pair,
+      harmonic_dimer, water_box_4 (ala_dipeptide once available)
+- [x] `tests/newton_third_law.rs` (§13.3) — same three fixtures
+- [x] `tests/energy_conservation.rs` (§13.4) — harmonic_dimer, 100k steps,
+      drift ~1e-9 (well under the 1e-4 tolerance)
+- [x] `tests/constraint_solver.rs` (§13.6) — convergence, manifold
+      adherence, forced non-convergence error, all per spec
+- [~] `tests/determinism.rs` (§13.5) — component-level coverage exists
+      (`cpu_backend.rs`'s repeatability-at-fixed-T test), but the literal
+      §13.5 test (two full runs of ala_dipeptide, byte-identical DCD
+      output) needs both the fixture and the run loop (`geodesic run`,
+      v0.4) and isn't meaningful before either exists
 
-**Session paused here 2026-07-10.** Full handoff, including the dihedral
-bug diagnosis and a concrete lead on the fix, is in `memory.md` at the repo
-root. Workspace is verified green (`cargo check --workspace`, `cargo clippy
---workspace --all-targets -- -D warnings`, `cargo test --workspace` all
-pass) — the two known-broken dihedral tests are `#[ignore]`d with reasons,
-not silently failing.
+Kept the ad-hoc per-module test file names (`bonded_gradient.rs`,
+`constraint_solver.rs`, `cpu_backend.rs`, etc.) rather than force a
+mechanical rename to SAD.md §13's exact file list — decided with Felipe:
+every test §13 asks for exists somewhere, and the per-module names are
+more discoverable than pure churn would be worth.
 
-**Exit criteria:** all five test files above pass on all four fixtures. Not
-yet met.
+Two real bugs found and fixed while building the fixtures (not
+hypothetical — both would have silently produced wrong results on a real
+AMBER file): `prmtop.rs` wasn't dividing AMBER's internal charge scaling
+factor (18.2223) back out, and an early draft of the energy-conservation
+test measured E(0) before projecting the initial velocity onto the
+constraint's tangent space, which reads as a spurious ~27% "drift" that's
+actually just RATTLE correctly rejecting an inconsistent initial
+condition. Full detail in memory.md.
+
+**Exit criteria:** all test files above pass on all four fixtures. Blocked
+on `ala_dipeptide.prmtop`/`.inpcrd` — everything else is done and green
+(`cargo check --workspace`, `cargo clippy --workspace --all-targets -- -D
+warnings`, `cargo test --workspace` all pass, zero ignored tests).
 
 ## v0.4 — CLI binary — M1 complete
 

@@ -130,7 +130,7 @@ Status legend: [x] done and tested, [~] partial/broken (see memory.md), [ ] not 
 17. [x] `geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
 18. [x] `geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
 
-**Phase 3 — Engine (force field + integrator) — core physics DONE, fixtures/checkpoint pending, see memory.md**
+**Phase 3 — Engine (force field + integrator) — DONE except ala_dipeptide fixture, see memory.md**
 19. [x] `geodesic-engine/Cargo.toml`
 20. [x] `geodesic-engine/src/lib.rs`
 21. [x] `geodesic-engine/src/neighbor.rs` (Verlet list)
@@ -150,17 +150,20 @@ Status legend: [x] done and tested, [~] partial/broken (see memory.md), [ ] not 
 28. [ ] `geodesic/Cargo.toml` (manifest exists, correct)
 29. [ ] `geodesic/src/main.rs` (`energy` + `run` subcommands) — still `fn main() {}`
 
-**Tests** (add alongside Phase 3) — ad-hoc per-file tests exist and pass
-(`tests/neighbor_list.rs`, `tests/nonbonded_gradient.rs`,
+**Tests** — decided with Felipe: keep ad-hoc per-module test file names
+rather than consolidate to SAD.md §13's exact file list; every test §13
+asks for exists somewhere, renaming was judged pure churn. Current files:
+`tests/neighbor_list.rs`, `tests/nonbonded_gradient.rs`,
 `tests/bonded_gradient.rs`, `tests/constraint_solver.rs`,
 `tests/hydrogen_constraint_promotion.rs`, `tests/integrator.rs`,
-`tests/cpu_backend.rs`), not yet consolidated into these exact
-SAD.md-named files (open question — see memory.md):
-- `geodesic-engine/tests/fixtures/` — small prmtop/inpcrd for LJ pair, harmonic dimer
-- `geodesic-engine/tests/gradient_check.rs`
-- `geodesic-engine/tests/newton_third_law.rs`
-- `geodesic-engine/tests/energy_conservation.rs`
-- `geodesic-engine/tests/determinism.rs`
+`tests/cpu_backend.rs`, `tests/fixture_gradient_check.rs` (§13.2),
+`tests/newton_third_law.rs` (§13.3), `tests/energy_conservation.rs`
+(§13.4). `tests/fixtures/` has `lj_pair`, `harmonic_dimer`, `water_box_4`
+(real TIP3P, verified against primary sources — see memory.md);
+`ala_dipeptide` pending Felipe's AmberTools output. Full literal §13.5
+`determinism.rs` (byte-identical DCD across two runs) needs both that
+fixture and the v0.4 run loop — only component-level determinism is
+tested so far (`cpu_backend.rs`'s repeatability-at-fixed-T test).
 
 ---
 
