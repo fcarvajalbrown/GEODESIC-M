@@ -3,6 +3,8 @@
 ### 1. System Overview
 **GEODESIC-M** is a high-precision simulation environment designed to explore protein conformational manifolds through classical mechanics. Unlike probabilistic LLM-based predictors, this system provides a deterministic, physics-based mapping of the high-dimensional energy landscape of a protein sequence. The system's distinguishing claim is that conformational transitions are geodesics on a Riemannian manifold defined by the Jacobi metric (§2.0), not Newtonian paths through flat space.
 
+**Scope:** GEODESIC-M is a research tool, not an HPC production engine. It targets small-to-medium systems (single protein, research-scale atom counts) where bit-for-bit determinism, auditability, and topological trajectory analysis matter more than raw throughput — not a GROMACS/NAMD/AMBER replacement for large-scale production MD.
+
 ---
 
 ### 2. Mathematical Foundation
