@@ -12,7 +12,7 @@ Protein conformational transitions are treated as **geodesics on a Riemannian ma
 
 $$g^J_{ij}(x) = 2(E - V(x))\, m_i\, \delta_{ij}$$
 
-where $E$ is the conserved total energy and $V(x)$ is the potential energy surface. Barriers become narrow metric necks; the folding funnel is a region of negative Ricci curvature. This is the Jacobi–Maupertuis principle — a 200-year-old result, recently validated computationally for protein dynamics (Lübbe et al., *PNAS* 2024).
+where $E$ is the conserved total energy and $V(x)$ is the potential energy surface. Barriers become narrow metric necks; the folding funnel is a region of negative Ricci curvature. This is the Jacobi–Maupertuis principle — a 200-year-old result, recently validated computationally for protein dynamics (Diepeveen et al., *PNAS* 2024).
 
 **Integrator:** Geodesic BAOAB (Leimkuhler & Matthews, *Proc. R. Soc. A* 2016) — true geodesic drift on the holonomic constraint manifold via the exponential map, not SHAKE/RATTLE reprojection. Supports timesteps of 4–9 fs with preserved energy conservation.
 

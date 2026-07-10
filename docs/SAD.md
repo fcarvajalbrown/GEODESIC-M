@@ -21,7 +21,7 @@ By the **Maupertuis principle**, classical trajectories with total energy $E$ ar
 
 > This is the operational meaning of "manifold" in GEODESIC-M: the metric, not just the potential, *is* the physics.
 
-Empirical validation: Lübbe, Slim et al. (*PNAS* 2024, arXiv:2308.07818) demonstrated that geodesics on such manifolds recover MD trajectory statistics for protein conformational transitions at a fraction of the simulation cost.
+Empirical validation: Diepeveen et al. (*PNAS* 2024, arXiv:2308.07818) demonstrated that geodesics on such manifolds recover MD trajectory statistics for protein conformational transitions at a fraction of the simulation cost.
 
 ---
 
