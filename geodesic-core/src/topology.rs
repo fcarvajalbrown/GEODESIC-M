@@ -1,5 +1,6 @@
 /// Force field connectivity, SoA throughout — the bonded force loop reads
 /// each array contiguously in sequence.
+#[derive(Debug)]
 pub struct BondedTopology {
     // Bond stretching — one entry per bond
     pub bond_i: Vec<u32>,
@@ -37,6 +38,7 @@ pub struct BondedTopology {
 
 /// Verlet pair list, rebuilt when any atom displaces more than
 /// (r_skin - r_cutoff) / 2 since the last build.
+#[derive(Debug)]
 pub struct NeighborList {
     // Flat list of all pairs (i, j) with i < j within r_skin
     pub pair_i: Vec<u32>,

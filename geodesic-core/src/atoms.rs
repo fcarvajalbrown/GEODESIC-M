@@ -1,4 +1,5 @@
 /// Static per-atom properties, read-only after initialization.
+#[derive(Debug)]
 pub struct AtomData {
     // LJ parameters — SoA, used in non-bonded inner loop
     pub epsilon: Vec<f64>, // kcal/mol
@@ -10,6 +11,7 @@ pub struct AtomData {
     pub meta: Vec<AtomMeta>,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct AtomMeta {
     pub element: Element,
     pub residue_id: u32,

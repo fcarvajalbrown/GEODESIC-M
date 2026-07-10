@@ -1,4 +1,5 @@
 /// Mutable integration state, SoA layout, passed through every BAB step.
+#[derive(Debug)]
 pub struct SimState {
     // Positions (Å)
     pub pos_x: Vec<f64>,

@@ -1,5 +1,6 @@
 /// Immutable run configuration, created once from config.toml and shared
 /// via Arc<SimParams> across threads.
+#[derive(Debug, Clone)]
 pub struct SimParams {
     pub n_atoms: usize,
     pub n_steps: u64,
