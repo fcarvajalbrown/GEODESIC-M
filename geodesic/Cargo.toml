@@ -1,0 +1,10 @@
+[package]
+name = "geodesic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geodesic-core = { workspace = true }
+geodesic-io = { workspace = true }
+geodesic-engine = { workspace = true }
+clap = { workspace = true }

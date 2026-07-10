@@ -1,0 +1,7 @@
+[package]
+name = "geodesic-io"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geodesic-core = { workspace = true }

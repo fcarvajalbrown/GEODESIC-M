@@ -1,0 +1,8 @@
+[package]
+name = "geodesic-engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geodesic-core = { workspace = true }
+rayon = { workspace = true }
