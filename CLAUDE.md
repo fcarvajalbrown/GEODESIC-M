@@ -72,6 +72,12 @@
 
 ---
 
+## Before Building From Scratch
+
+Before implementing a substantial new component (a new module, algorithm, or subsystem — not a small function), check crates.io / the web for a maintained OSS alternative. Report what was found (or that nothing viable exists) before writing custom code. Skip this check for trivial additions.
+
+---
+
 ## Rust Conventions
 
 - **Error types:** `thiserror` for library errors; all error types live in `geodesic-core::error` (SAD.md §12.1)
