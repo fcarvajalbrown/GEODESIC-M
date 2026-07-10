@@ -1,6 +1,12 @@
 # GEODESIC-M
 
-Deterministic Protein Manifold Simulator — a physics-based, classical mechanics engine for mapping protein conformational energy landscapes.
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/fcarvajalbrown/GEODESIC-M)](https://github.com/fcarvajalbrown/GEODESIC-M/releases)
+[![Rust](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
+[![MSRV](https://img.shields.io/badge/rust-1.78%2B-orange.svg)](https://www.rust-lang.org/)
+[![Status](https://img.shields.io/badge/status-in%20development-yellow.svg)](ROADMAP.md)
+
+Deterministic Protein Manifold Simulator — a physics-based molecular dynamics engine, written in Rust, for mapping protein conformational energy landscapes.
 
 Unlike probabilistic structure predictors, GEODESIC-M produces a deterministic, auditable trajectory: given the same initial state and timestep, every run is bit-for-bit identical.
 
