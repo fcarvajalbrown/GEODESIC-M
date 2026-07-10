@@ -29,23 +29,31 @@ crate compiles standalone before anything else exists.
 `cargo check --workspace` and `cargo clippy --workspace -- -D warnings`,
 both clean).
 
-## v0.2 — I/O layer (`geodesic-io`)
+## v0.2 — I/O layer (`geodesic-io`) — DONE
 
 CLAUDE.md Phase 2. Parses `config.toml` → `SimParams`, AMBER `prmtop` →
 `AtomData` + `BondedTopology`, AMBER `inpcrd` → initial `SimState`. Writes DCD
 trajectory, CSV energy log, JSON barcode, PDB snapshots (SAD.md §10). No
 engine dependency — this crate only touches `geodesic-core` types.
 
-- [ ] `geodesic-io/Cargo.toml`, `src/lib.rs`
-- [ ] `src/config.rs` — TOML → `SimParams`, unknown keys rejected
-- [ ] `src/prmtop.rs`
-- [ ] `src/inpcrd.rs`
-- [ ] `src/dcd.rs`
-- [ ] `src/export.rs` — CSV energy log, JSON barcode
-- [ ] `src/pdb.rs`
+- [x] `geodesic-io/Cargo.toml`, `src/lib.rs`
+- [x] `src/config.rs` — TOML → `SimParams`, unknown keys rejected
+- [x] `src/prmtop.rs`
+- [x] `src/inpcrd.rs`
+- [x] `src/dcd.rs`
+- [x] `src/export.rs` — CSV energy log, JSON barcode
+- [x] `src/pdb.rs`
 
-**Exit criteria:** round-trip tests per SAD.md §13.8 pass (prmtop atom/bond
-counts, inpcrd position precision, DCD frame count, TOML rejection rules).
+**Exit criteria:** round-trip tests per SAD.md §13.8 pass — met, 9 tests
+across all six files, all green. One deviation from §13.1/§13.8's literal
+wording: those sections name `ala_dipeptide.prmtop` as the round-trip
+fixture, but that's a real 22-atom force-field file that can't be
+hand-typed without risking fabricated parameters — a hand-built,
+hand-verified `lj_pair` fixture (2 atoms, self-consistent LJ/bond/angle/
+dihedral/exclusion data) was used instead to test parser *mechanics*.
+A real AmberTools-generated `ala_dipeptide.prmtop` is still needed before
+v0.3's physics tests (§13.1) can check force-field *values* against
+literature, not just parser correctness.
 
 ## v0.3 — Force field + CPU integrator (`geodesic-engine`)
 
