@@ -124,26 +124,32 @@ Status legend: [x] done and tested, [~] partial/broken (see memory.md), [ ] not 
 17. [x] `geodesic-io/src/export.rs` (CSV energy log, JSON barcode)
 18. [x] `geodesic-io/src/pdb.rs` (PDB secondary input + snapshot writer)
 
-**Phase 3 — Engine (force field + integrator) — IN PROGRESS, see memory.md**
+**Phase 3 — Engine (force field + integrator) — core physics DONE, fixtures/checkpoint pending, see memory.md**
 19. [x] `geodesic-engine/Cargo.toml`
 20. [x] `geodesic-engine/src/lib.rs`
 21. [x] `geodesic-engine/src/neighbor.rs` (Verlet list)
 22. [x] `geodesic-engine/src/force/mod.rs`
 23. [x] `geodesic-engine/src/force/nonbonded.rs` (LJ, SoA, AVX2)
-24. [~] `geodesic-engine/src/force/bonded.rs` (bonds/angles done and tested;
-    dihedral known broken for general geometry — do not use, see the doc
-    comment on `compute_dihedral_forces` and memory.md)
-25. [ ] `geodesic-engine/src/constraint.rs` (Lagrangian solver) — placeholder only
-26. [ ] `geodesic-engine/src/integrator.rs` (Geodesic BAB loop) — placeholder only
-27. [ ] `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl) — placeholder only
+24. [x] `geodesic-engine/src/force/bonded.rs` (bonds/angles/dihedral all done
+    and gradient-tested; dihedral f_j/f_k sign error fixed via symbolic
+    chain-rule derivation, see memory.md)
+25. [x] `geodesic-engine/src/constraint.rs` (Lagrangian solver: position
+    SHAKE + velocity RATTLE projection, hydrogen-bond promotion)
+26. [x] `geodesic-engine/src/integrator.rs` (Geodesic BAB: half_kick +
+    drift_and_constrain)
+27. [x] `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl: Rayon static
+    strip decomposition, deterministic reduction)
 
 **Phase 4 — Binary (CLI) — NOT STARTED**
 28. [ ] `geodesic/Cargo.toml` (manifest exists, correct)
 29. [ ] `geodesic/src/main.rs` (`energy` + `run` subcommands) — still `fn main() {}`
 
-**Tests** (add alongside Phase 3) — ad-hoc equivalents exist and pass
+**Tests** (add alongside Phase 3) — ad-hoc per-file tests exist and pass
 (`tests/neighbor_list.rs`, `tests/nonbonded_gradient.rs`,
-`tests/bonded_gradient.rs`), not yet consolidated into these exact files:
+`tests/bonded_gradient.rs`, `tests/constraint_solver.rs`,
+`tests/hydrogen_constraint_promotion.rs`, `tests/integrator.rs`,
+`tests/cpu_backend.rs`), not yet consolidated into these exact
+SAD.md-named files (open question — see memory.md):
 - `geodesic-engine/tests/fixtures/` — small prmtop/inpcrd for LJ pair, harmonic dimer
 - `geodesic-engine/tests/gradient_check.rs`
 - `geodesic-engine/tests/newton_third_law.rs`
