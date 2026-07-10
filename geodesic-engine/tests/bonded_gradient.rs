@@ -117,7 +117,6 @@ fn angle_gradient_matches_finite_difference() {
 }
 
 #[test]
-#[ignore = "compute_dihedral_forces f_j/f_k is known broken for general geometry — see doc comment on the function; this passes only because this particular geometry happens to be a case the incomplete formula gets right"]
 fn dihedral_gradient_matches_finite_difference() {
     let mut state = SimState::new(4);
     // non-degenerate dihedral geometry (not collinear/coplanar)
@@ -141,7 +140,6 @@ fn dihedral_gradient_matches_finite_difference() {
 }
 
 #[test]
-#[ignore = "currently FAILS — compute_dihedral_forces f_j/f_k formula is known broken; this is the regression check to re-enable once it's fixed, see doc comment on compute_dihedral_forces"]
 fn dihedral_gradient_matches_finite_difference_second_geometry() {
     // different, less symmetric geometry — catches a formula that only
     // happens to work for one special-case layout
@@ -165,9 +163,6 @@ fn dihedral_gradient_matches_finite_difference_second_geometry() {
     });
 }
 
-// Note: force-balance holds by construction regardless of whether the
-// f_j/f_k formula is actually correct (see compute_dihedral_forces doc
-// comment) — this test passing does NOT mean the dihedral force is right.
 #[test]
 fn dihedral_total_force_sums_to_zero() {
     let mut state = SimState::new(4);

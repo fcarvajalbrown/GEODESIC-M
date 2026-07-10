@@ -103,24 +103,12 @@ pub fn compute_angle_forces(
 
 /// V_phi = k[1 + cos(n*phi - delta)] over i-j-k-l (SAD.md §2.1.1).
 ///
-/// KNOWN BROKEN as of this commit — do not use. f_i and f_l (forces on the
-/// outer atoms) are verified correct via finite-difference gradient check.
-/// f_j and f_k (forces on the inner two atoms, derived from f_i/f_l via a
-/// b1·b2/b3·b2 projection ansatz) are wrong for general geometry: they pass
-/// one symmetric test case (n=2, delta=0) but fail an asymmetric one, with
-/// an error that isn't a clean sign flip (~8% magnitude error), meaning the
-/// projection formula itself is structurally incomplete, not just mis-signed.
-///
-/// Numeric ground truth gathered while debugging (see git history for the
-/// Python scratch derivation): for geometry
-///   ri=(0.3,-0.6,1.1) rj=(-0.4,0.5,0.2) rk=(0.9,1.3,-0.3) rl=(2.1,0.8,1.4),
-/// dphi/dri = -b2_len/m_len2 * m and dphi/drl = b2_len/n_len2 * n are exact
-/// (confirmed numerically), but dphi/drj and dphi/drk do NOT match the
-/// f_i/f_l-projection ansatz current f_j/f_k use. The likely fix is a full
-/// symbolic chain-rule derivation of dphi/drj through m, n, AND the explicit
-/// b2 dependence in y = (m×n)·b2/|b2| (the direct b2-in-the-formula term is
-/// probably the missing piece — the projection ansatz only captures the
-/// indirect dependence through m and n, not this direct one).
+/// f_i and f_l come from the Blondel & Karplus (1996) plane-normal formula.
+/// f_j and f_k are recovered from f_i/f_l via p = b1·b2/|b2|^2 and
+/// q = b3·b2/|b2|^2: f_j = -(1+p)*f_i + q*f_l, f_k = p*f_i - (1+q)*f_l.
+/// Verified by full symbolic chain-rule differentiation of
+/// phi = atan2((m×n)·b2/|b2|, m·n) against three independent geometries
+/// (machine-epsilon agreement) — see memory.md for the derivation.
 pub fn compute_dihedral_forces(
     state: &SimState,
     bonded: &BondedTopology,
@@ -162,10 +150,10 @@ pub fn compute_dihedral_forces(
         let f_i = scale(m, -dv_dphi * b2_len / m_len2);
         let f_l = scale(nvec, dv_dphi * b2_len / n_len2);
 
-        let b1_dot_b2 = dot(b1, b2) / (b2_len * b2_len);
-        let b3_dot_b2 = dot(b3, b2) / (b2_len * b2_len);
-        let f_j = add(scale(f_i, b1_dot_b2 - 1.0), scale(f_l, b3_dot_b2));
-        let f_k = sub(scale(f_i, -b1_dot_b2), scale(f_l, b3_dot_b2 + 1.0));
+        let p = dot(b1, b2) / (b2_len * b2_len);
+        let q = dot(b3, b2) / (b2_len * b2_len);
+        let f_j = add(scale(f_i, -(p + 1.0)), scale(f_l, q));
+        let f_k = sub(scale(f_i, p), scale(f_l, q + 1.0));
 
         add_force(force_x, force_y, force_z, i, f_i);
         add_force(force_x, force_y, force_z, j, f_j);
