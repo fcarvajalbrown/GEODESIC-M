@@ -2,6 +2,12 @@ use crate::fixed_width::chunk_fields;
 use geodesic_core::{AtomData, AtomMeta, BondedTopology, ConfigError, Element};
 use std::collections::HashMap;
 
+/// AMBER prmtop CHARGE values are pre-scaled by sqrt(332.0522173 kcal·Å/mol)
+/// so Coulomb energy is q_i*q_j/r directly in kcal/mol with no extra
+/// constant — divide by this to recover `AtomData::charge`'s documented
+/// elementary-charge units.
+const AMBER_CHARGE_TO_ELEMENTARY: f64 = 18.2223;
+
 /// Raw %FLAG sections, keyed by flag name, holding the concatenated
 /// fixed-width data text (newlines stripped) for that section.
 struct Sections(HashMap<String, String>);
@@ -192,7 +198,11 @@ pub fn parse(text: &str) -> Result<(AtomData, BondedTopology), ConfigError> {
     let nptra = pointers[17] as usize;
 
     let names = sections.names4("ATOM_NAME", natom)?;
-    let charge = sections.floats("CHARGE", 16, natom)?;
+    let charge: Vec<f64> = sections
+        .floats("CHARGE", 16, natom)?
+        .into_iter()
+        .map(|q| q / AMBER_CHARGE_TO_ELEMENTARY)
+        .collect();
     let mass = sections.floats("MASS", 16, natom)?;
     let atom_type_index = sections.ints("ATOM_TYPE_INDEX", 8, natom)?;
     let number_excluded = sections.ints("NUMBER_EXCLUDED_ATOMS", 8, natom)?;

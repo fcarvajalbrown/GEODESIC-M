@@ -27,3 +27,21 @@ fn lj_pair_atom_data() {
     assert_eq!(bonded.dihed_i.len(), 0);
     assert_eq!(bonded.excl_i.len(), 0);
 }
+
+/// Real AMBER prmtop files store CHARGE pre-scaled by 18.2223 (so Coulomb
+/// energy is q_i*q_j/r directly in kcal/mol) -- AtomData::charge must come
+/// out in plain elementary-charge units, not the AMBER-internal scaling.
+#[test]
+fn charge_is_unscaled_from_amber_internal_units() {
+    let text = std::fs::read_to_string("tests/fixtures/lj_pair.prmtop")
+        .unwrap()
+        .replace(
+            "%FLAG CHARGE\n%FORMAT(5E16.8)\n  0.00000000E+00  0.00000000E+00",
+            "%FLAG CHARGE\n%FORMAT(5E16.8)\n  7.28892000E+00 -7.28892000E+00",
+        );
+    let (atoms, _) = geodesic_io::prmtop::parse(&text).unwrap();
+
+    // 7.28892 / 18.2223 = 0.4 elementary charge
+    assert!((atoms.charge[0] - 0.4).abs() < 1e-8, "got {}", atoms.charge[0]);
+    assert!((atoms.charge[1] + 0.4).abs() < 1e-8, "got {}", atoms.charge[1]);
+}
