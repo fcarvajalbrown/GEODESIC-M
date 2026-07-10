@@ -23,6 +23,8 @@ By the **Maupertuis principle**, classical trajectories with total energy $E$ ar
 
 Empirical validation: Diepeveen et al. (*PNAS* 2024, arXiv:2308.07818) demonstrated that geodesics on such manifolds recover MD trajectory statistics for protein conformational transitions at a fraction of the simulation cost.
 
+Known limitation: accuracy degrades for large-scale deformations and disordered regions, where geodesic approximation error is largest (Diepeveen et al., §4). GEODESIC-M targets ordered, medium-deformation transitions in M1; highly disordered systems are out of scope until this is revisited.
+
 ---
 
 #### 2.1 Total Potential Energy
