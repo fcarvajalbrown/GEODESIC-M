@@ -92,6 +92,8 @@ Naive pairwise evaluation is $O(N^2)$. A **Verlet neighbor list** with cutoff $r
 - List rebuilt when any atom displaces more than $\tfrac{r_s - r_c}{2}$ since the last build.
 - Only pairs within the list are evaluated; pairs with $r > r_c$ contribute zero force.
 
+**Bonded exclusions:** 1-2 (directly bonded), 1-3 (angle-connected), and 1-4 (dihedral-connected) atom pairs are excluded from the neighbor list entirely — they already interact via bonded forces (§2.1.1), and applying full LJ on top would double-count the interaction and blow up numerically at bond-length separation. `BondedTopology::excl_i`/`excl_j` (§8.3) is filtered out of `NeighborList` at build time, before the cutoff/skin check.
+
 ---
 
 #### 2.6 Persistent Sheaf Laplacian (PSL) — Flexibility Analysis
@@ -381,6 +383,10 @@ struct BondedTopology {
     constr_i:   Vec<u32>,
     constr_j:   Vec<u32>,
     constr_dsq: Vec<f64>,  // target |r_i - r_j|² (Å²)
+
+    // Non-bonded exclusions: 1-2, 1-3, 1-4 pairs (§2.5)
+    excl_i: Vec<u32>,
+    excl_j: Vec<u32>,
 }
 ```
 

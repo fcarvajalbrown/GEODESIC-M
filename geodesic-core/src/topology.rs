@@ -28,6 +28,11 @@ pub struct BondedTopology {
     pub constr_i: Vec<u32>,
     pub constr_j: Vec<u32>,
     pub constr_dsq: Vec<f64>, // target |r_i - r_j|² (Å²)
+
+    // Non-bonded exclusions: 1-2, 1-3, and 1-4 pairs, filtered out of the
+    // Verlet list at build time so bonded neighbors don't also get LJ forces
+    pub excl_i: Vec<u32>,
+    pub excl_j: Vec<u32>,
 }
 
 /// Verlet pair list, rebuilt when any atom displaces more than
