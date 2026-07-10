@@ -25,6 +25,15 @@
 
 ---
 
+## Releases
+
+- **Publish a GitHub release at every 0.1 version boundary** (v0.1, v0.2, v0.3, ... per ROADMAP.md) once that version's exit criteria are met — standing authorization, do not ask each time.
+- Tag as `v0.X`, matching the ROADMAP.md heading exactly.
+- **Release body is written in Felipe's voice, not changelog boilerplate** — run it through the AI-tell checklist from the global CLAUDE.md (no "this release introduces/delivers", no "we're excited to announce", no negation-parallelism, no em-dash-as-inciso, varied sentence length) before publishing. State concretely what changed and what it enables next, not abstract praise.
+- Use `gh release create` — never `gh pr create` unless explicitly asked (see Git Commits above).
+
+---
+
 ## Terminal & Environment
 
 - **OS:** Windows, **IDE:** VS Code
