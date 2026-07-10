@@ -6,7 +6,7 @@ a working subset of the CLI — no version is "half a feature." Architecture
 reference for every item below: [`docs/SAD.md`](docs/SAD.md). File-level build
 order within each M1 phase: [`CLAUDE.md`](CLAUDE.md).
 
-## v0.1 — Core types (`geodesic-core`) — IN PROGRESS
+## v0.1 — Core types (`geodesic-core`) — DONE
 
 CLAUDE.md Phase 1. No behavior yet, just the data model everything else is
 built on: `SimState`, `AtomData`, `SimParams`, `BondedTopology`,
@@ -17,15 +17,17 @@ crate compiles standalone before anything else exists.
 - [x] `Cargo.toml` (workspace root)
 - [x] `geodesic-core/Cargo.toml`
 - [x] `geodesic-core/src/lib.rs`
-- [ ] `geodesic-core/src/error.rs`
-- [ ] `geodesic-core/src/state.rs`
-- [ ] `geodesic-core/src/atoms.rs`
-- [ ] `geodesic-core/src/params.rs`
-- [ ] `geodesic-core/src/topology.rs`
-- [ ] `geodesic-core/src/buffers.rs`
-- [ ] `geodesic-core/src/backend.rs`
+- [x] `geodesic-core/src/error.rs`
+- [x] `geodesic-core/src/state.rs`
+- [x] `geodesic-core/src/atoms.rs`
+- [x] `geodesic-core/src/params.rs`
+- [x] `geodesic-core/src/topology.rs`
+- [x] `geodesic-core/src/buffers.rs`
+- [x] `geodesic-core/src/backend.rs`
 
-**Exit criteria:** `cargo check -p geodesic-core` green.
+**Exit criteria:** `cargo check -p geodesic-core` green — met (verified via
+`cargo check --workspace` and `cargo clippy --workspace -- -D warnings`,
+both clean).
 
 ## v0.2 — I/O layer (`geodesic-io`)
 
