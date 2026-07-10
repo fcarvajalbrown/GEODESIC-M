@@ -102,6 +102,8 @@ $$\mathcal{L}^k_{\mathcal{F}} = \bigl(\delta^k_{\mathcal{F}}\bigr)^T \delta^k_{\
 
 where $\delta^k_{\mathcal{F}}$ is the coboundary map twisted by the sheaf restriction maps. Running this over a filtration of growing contact radius $r$ gives **persistent** spectral invariants of the flexibility landscape. Validated result: PSL achieves 32% higher B-factor prediction accuracy than GNM on a 364-protein benchmark.
 
+Cost note: PSL eigendecomposition scales cubically with system size (matrix assembly + eigensolve). Large proteins may require windowing (a contact-radius or residue-subset cutoff) to stay tractable — revisit if M1 fixture-scale benchmarks don't generalize to full proteins.
+
 ---
 
 #### 2.7 Zigzag Persistence — Trajectory Topology
