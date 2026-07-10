@@ -55,7 +55,7 @@ A real AmberTools-generated `ala_dipeptide.prmtop` is still needed before
 v0.3's physics tests (§13.1) can check force-field *values* against
 literature, not just parser correctness.
 
-## v0.3 — Force field + CPU integrator (`geodesic-engine`) — CORE DONE, BLOCKED ON ala_dipeptide
+## v0.3 — Force field + CPU integrator (`geodesic-engine`) — DONE
 
 CLAUDE.md Phase 3. The physics: Verlet neighbor lists, bonded (bond/angle/
 dihedral) and non-bonded (LJ) forces in SoA, the Lagrangian constraint solver,
@@ -77,10 +77,13 @@ after it.
 - [x] Fixtures: `lj_pair`, `harmonic_dimer`, `water_box_4` — real, verified
       (water_box_4 is 4 actual TIP3P waters, parameters cross-checked
       against the AMBER archive tip3p.frcmod thread and LAMMPS's TIP3P
-      table). `ala_dipeptide` still pending — Felipe is generating it via
-      AmberTools; can't be hand-typed (real 22-atom force field).
+      table). `ala_dipeptide` **deferred to v0.4** — it's a real 22-atom
+      force field that can't be hand-typed without risking fabricated
+      parameters, and v0.4 needs it anyway for the golden reference
+      trajectory (§13.7), so it lands there once Felipe generates it via
+      AmberTools rather than blocking v0.3 on it.
 - [x] `tests/fixture_gradient_check.rs` (§13.2) — runs on lj_pair,
-      harmonic_dimer, water_box_4 (ala_dipeptide once available)
+      harmonic_dimer, water_box_4; extend to ala_dipeptide in v0.4
 - [x] `tests/newton_third_law.rs` (§13.3) — same three fixtures
 - [x] `tests/energy_conservation.rs` (§13.4) — harmonic_dimer, 100k steps,
       drift ~1e-9 (well under the 1e-4 tolerance)
@@ -107,10 +110,12 @@ constraint's tangent space, which reads as a spurious ~27% "drift" that's
 actually just RATTLE correctly rejecting an inconsistent initial
 condition. Full detail in memory.md.
 
-**Exit criteria:** all test files above pass on all four fixtures. Blocked
-on `ala_dipeptide.prmtop`/`.inpcrd` — everything else is done and green
-(`cargo check --workspace`, `cargo clippy --workspace --all-targets -- -D
-warnings`, `cargo test --workspace` all pass, zero ignored tests).
+**Exit criteria:** all test files above pass on the three available
+fixtures, engine core (neighbor list, forces, constraint solver,
+integrator, CPU backend) complete and tested. Met — `ala_dipeptide` is
+deferred to v0.4 (see above), not a v0.3 blocker. Green across the board:
+`cargo check --workspace`, `cargo clippy --workspace --all-targets -- -D
+warnings`, `cargo test --workspace`, zero ignored tests.
 
 ## v0.4 — CLI binary — M1 complete
 
