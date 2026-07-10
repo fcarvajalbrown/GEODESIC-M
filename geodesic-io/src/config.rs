@@ -51,6 +51,12 @@ struct RawNonbonded {
 struct RawConstraints {
     max_iter: u32,
     tolerance: f64,
+    #[serde(default = "default_constrain_hydrogens")]
+    constrain_hydrogens: bool,
+}
+
+fn default_constrain_hydrogens() -> bool {
+    true
 }
 
 #[derive(Deserialize)]
@@ -107,6 +113,7 @@ pub struct Config {
 
     pub max_constr_iter: u32,
     pub constr_tol: f64,
+    pub constrain_hydrogens: bool,
 
     pub trajectory: PathBuf,
     pub energy_log: PathBuf,
@@ -167,6 +174,7 @@ impl Config {
             r_switch: raw.nonbonded.r_switch,
             max_constr_iter: raw.constraints.max_iter,
             constr_tol: raw.constraints.tolerance,
+            constrain_hydrogens: raw.constraints.constrain_hydrogens,
             trajectory: raw.output.trajectory,
             energy_log: raw.output.energy_log,
             monitoring,
