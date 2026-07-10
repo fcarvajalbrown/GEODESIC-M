@@ -17,7 +17,7 @@ On the energy hypersurface $H = E$, the **Jacobi metric** on configuration space
 
 $$g^J_{ij}(x) = 2\bigl(E - V(x)\bigr)\, m_i\, \delta_{ij}$$
 
-By the **Maupertuis principle**, classical trajectories with total energy $E$ are exactly the **geodesics** of $(\mathcal{M},\, g^J)$. The curvature of $g^J$ encodes the topology of the energy landscape: regions of high $V$ contract the metric (barriers become narrow necks), and regions of low $V$ expand it (minima become wide basins). The "folding funnel" is a geometric object — a region of negative Ricci scalar curvature funneling geodesics toward the native state.
+By the **Maupertuis principle**, classical trajectories with total energy $E$ are exactly the **geodesics** of $(\mathcal{M},\, g^J)$. The curvature of $g^J$ encodes the topology of the energy landscape: regions of high $V$ contract the metric (barriers become narrow necks), and regions of low $V$ expand it (minima become wide basins). The "folding funnel" is a geometric object — a region of positive Ricci scalar curvature funneling geodesics toward the native state.
 
 > This is the operational meaning of "manifold" in GEODESIC-M: the metric, not just the potential, *is* the physics.
 
