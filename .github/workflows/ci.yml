@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    # windows-latest matches the platform the golden reference DCD (§13.7) was
+    # generated on; a 100-step trajectory is not byte-identical across OSes
+    # (libm cos/acos/sqrt differ by an ULP and propagate), so the byte-exact
+    # golden and determinism checks only hold on a fixed platform.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Test
+        run: cargo test --workspace
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+# Deferred from SAD.md §13.10 until the features/hardware they need exist:
+#   - cargo test --features topo  -> geodesic-topo lands in v0.8
+#   - cargo bench (pinned runner)  -> needs the self-hosted [bench] host
+#   - cargo fmt --check            -> repo is hand-formatted, not rustfmt-clean;
+#                                     enforcing it is a separate deliberate pass
