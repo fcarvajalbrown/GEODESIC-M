@@ -19,8 +19,15 @@ pub fn parse(text: &str, expected_n_atoms: usize, has_box: bool) -> Result<SimSt
         });
     }
 
+    // The spec (ambermd.org/FileFormats.php) gives NATOM as a 5-character
+    // field (I5), but real tleap output isn't always that exact -- e.g. a
+    // widely-used AmberTools-generated alanine dipeptide fixture pads it to
+    // 6 characters. Since this line holds a single integer (TIME, if
+    // present, is still whitespace-separated from it), splitting on
+    // whitespace here is safe -- unlike the coordinate data lines below,
+    // which are genuinely fixed-width with no guaranteed separator.
     let header = all_lines[1];
-    let natom_field = chunk_fields(header, 5, 1)[0];
+    let natom_field = header.split_whitespace().next().unwrap_or("");
     let natom: usize = natom_field.trim().parse().map_err(|_| ConfigError::InvalidValue {
         key: "inpcrd header".to_string(),
         value: natom_field.to_string(),
