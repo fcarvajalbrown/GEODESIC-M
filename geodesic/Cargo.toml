@@ -8,3 +8,10 @@ geodesic-core = { workspace = true }
 geodesic-io = { workspace = true }
 geodesic-engine = { workspace = true }
 clap = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bench]]
+name = "benchmarks"
+harness = false
