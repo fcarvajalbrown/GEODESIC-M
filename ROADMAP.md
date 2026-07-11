@@ -125,6 +125,12 @@ CLAUDE.md Phase 4. `geodesic energy <prmtop> <inpcrd>` and `geodesic run
 is the point M1 ("CPU-only headless simulation") is actually done, not just
 "compiles."
 
+`ala_dipeptide.prmtop`/`.inpcrd` arrived shortly after v0.3 shipped (real
+AmberTools output via `choderalab/YankTools`, see README's License section
+for provenance) and is already wired into `fixture_gradient_check.rs` and
+`newton_third_law.rs` — no longer a blocker for the golden reference work
+below.
+
 - [ ] `geodesic/Cargo.toml`, `src/main.rs`
 - [ ] `tests/golden_reference.rs`
 - [ ] `cargo bench` baselines committed (§13.9: `bench_lj_inner_loop`,

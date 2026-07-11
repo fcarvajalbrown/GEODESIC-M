@@ -158,12 +158,15 @@ asks for exists somewhere, renaming was judged pure churn. Current files:
 `tests/hydrogen_constraint_promotion.rs`, `tests/integrator.rs`,
 `tests/cpu_backend.rs`, `tests/fixture_gradient_check.rs` (§13.2),
 `tests/newton_third_law.rs` (§13.3), `tests/energy_conservation.rs`
-(§13.4). `tests/fixtures/` has `lj_pair`, `harmonic_dimer`, `water_box_4`
-(real TIP3P, verified against primary sources — see memory.md);
-`ala_dipeptide` pending Felipe's AmberTools output. Full literal §13.5
-`determinism.rs` (byte-identical DCD across two runs) needs both that
-fixture and the v0.4 run loop — only component-level determinism is
-tested so far (`cpu_backend.rs`'s repeatability-at-fixed-T test).
+(§13.4). `tests/fixtures/` has all four: `lj_pair`, `harmonic_dimer`,
+`water_box_4` (real TIP3P, verified against primary sources), and
+`ala_dipeptide` (real AmberTools output, fetched from
+`choderalab/YankTools`, GPL-2.0 — see README's License section and
+memory.md for provenance; this is also why the project relicensed to
+GPL-2.0-or-later). Full literal §13.5 `determinism.rs` (byte-identical
+DCD across two runs) needs the v0.4 run loop — only component-level
+determinism is tested so far (`cpu_backend.rs`'s repeatability-at-fixed-T
+test).
 
 ---
 
