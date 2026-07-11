@@ -74,3 +74,8 @@ fn harmonic_dimer_net_force_vanishes() {
 fn water_box_4_net_force_vanishes() {
     check_net_force_vanishes("water_box_4");
 }
+
+#[test]
+fn ala_dipeptide_net_force_vanishes() {
+    check_net_force_vanishes("ala_dipeptide");
+}

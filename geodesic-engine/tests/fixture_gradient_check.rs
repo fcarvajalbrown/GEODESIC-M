@@ -127,3 +127,8 @@ fn harmonic_dimer_gradient_matches_finite_difference() {
 fn water_box_4_gradient_matches_finite_difference() {
     check_gradient_matches_fixture("water_box_4");
 }
+
+#[test]
+fn ala_dipeptide_gradient_matches_finite_difference() {
+    check_gradient_matches_fixture("ala_dipeptide");
+}
