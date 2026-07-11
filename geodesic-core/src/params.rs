@@ -6,6 +6,7 @@ pub struct SimParams {
     pub n_steps: u64,
     pub dt: f64,           // timestep (ps); typically 0.004 ps = 4 fs with Geodesic BAOAB
     pub box_size: [f64; 3], // simulation box (Å); cubic assumed in v1
+    pub periodic: bool,     // false = non-periodic (GBSA etc.): no wrap into [0, box) (SAD.md §2.4)
 
     pub r_cutoff: f64,
     pub r_skin: f64,

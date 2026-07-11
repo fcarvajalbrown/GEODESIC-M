@@ -23,6 +23,7 @@ fn params(n_atoms: usize) -> SimParams {
         n_steps: 0,
         dt: 0.004,
         box_size: [100.0, 100.0, 100.0],
+        periodic: true,
         r_cutoff: 12.0,
         r_skin: 14.0,
         r_switch: 10.0,

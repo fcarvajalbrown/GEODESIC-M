@@ -29,6 +29,8 @@ struct RawSystem {
     prmtop: PathBuf,
     inpcrd: PathBuf,
     box_size: [f64; 3],
+    #[serde(default)]
+    periodic: bool,
 }
 
 #[derive(Deserialize)]
@@ -103,6 +105,7 @@ pub struct Config {
     pub prmtop: PathBuf,
     pub inpcrd: PathBuf,
     pub box_size: [f64; 3],
+    pub periodic: bool,
 
     pub dt: f64,
     pub total_energy: f64,
@@ -167,6 +170,7 @@ impl Config {
             prmtop: raw.system.prmtop,
             inpcrd: raw.system.inpcrd,
             box_size: raw.system.box_size,
+            periodic: raw.system.periodic,
             dt: raw.integrator.dt,
             total_energy: raw.integrator.total_energy,
             r_cutoff: raw.nonbonded.r_cutoff,
@@ -190,6 +194,7 @@ impl Config {
             n_steps: self.n_steps,
             dt: self.dt,
             box_size: self.box_size,
+            periodic: self.periodic,
             r_cutoff: self.r_cutoff,
             r_skin: self.r_skin,
             r_switch: self.r_switch,

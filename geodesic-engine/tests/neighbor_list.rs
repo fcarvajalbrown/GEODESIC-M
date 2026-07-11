@@ -33,6 +33,7 @@ fn params(box_size: [f64; 3]) -> SimParams {
         n_steps: 0,
         dt: 0.004,
         box_size,
+        periodic: true,
         r_cutoff: 5.0,
         r_skin: 6.0,
         r_switch: 4.0,

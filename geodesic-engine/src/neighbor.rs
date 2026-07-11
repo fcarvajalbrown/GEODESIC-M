@@ -6,7 +6,13 @@ use std::collections::HashSet;
 /// bonded pairs (SAD.md §2.5). Serial by construction — list rebuilds are
 /// infrequent, and a plain double loop is unambiguously deterministic.
 pub fn build(state: &mut SimState, params: &SimParams, bonded: &BondedTopology) -> NeighborList {
-    wrap_into_box(state, params.box_size);
+    // Non-periodic systems (GBSA, vacuum) have no box to wrap into; wrapping
+    // per-atom would split a molecule straddling a boundary, and the bonded
+    // terms use raw (non-min-image) differences (SAD.md §2.4 applies only when
+    // PBC is on). Leave coordinates whole in that case.
+    if params.periodic {
+        wrap_into_box(state, params.box_size);
+    }
 
     let n = state.pos_x.len();
     let excluded: HashSet<(u32, u32)> = bonded
