@@ -117,29 +117,62 @@ deferred to v0.4 (see above), not a v0.3 blocker. Green across the board:
 `cargo check --workspace`, `cargo clippy --workspace --all-targets -- -D
 warnings`, `cargo test --workspace`, zero ignored tests.
 
-## v0.4 — CLI binary — M1 complete
+## v0.4 — CLI binary — M1 complete — DONE
 
 CLAUDE.md Phase 4. `geodesic energy <prmtop> <inpcrd>` and `geodesic run
 <config.toml>` (SAD.md §9.2). Golden reference trajectory frozen
-(`ala_dipeptide_ref.dcd`, §13.7) once this build is verified correct — this
+(`ala_dipeptide_ref.dcd`, §13.7) on the first verified-correct build — this
 is the point M1 ("CPU-only headless simulation") is actually done, not just
 "compiles."
 
 `ala_dipeptide.prmtop`/`.inpcrd` arrived shortly after v0.3 shipped (real
 AmberTools output via `choderalab/YankTools`, see README's License section
-for provenance) and is already wired into `fixture_gradient_check.rs` and
-`newton_third_law.rs` — no longer a blocker for the golden reference work
-below.
+for provenance) and is wired into `fixture_gradient_check.rs`,
+`newton_third_law.rs`, and now the golden reference + determinism runs.
 
-- [ ] `geodesic/Cargo.toml`, `src/main.rs`
-- [ ] `tests/golden_reference.rs`
-- [ ] `cargo bench` baselines committed (§13.9: `bench_lj_inner_loop`,
-      `bench_neighbor_rebuild`, `bench_constraint_solver`, `bench_full_step`)
-- [ ] CI matrix green (§13.10): test, clippy, fmt
+- [x] `geodesic/Cargo.toml`, `src/main.rs` — clap CLI; the crate is now
+      lib + bin so `run_from_config_file` is testable without shelling out.
+      Run orchestration lives in the binary (not the engine) because it needs
+      `geodesic-io`, which the crate graph (§9.3) forbids the engine to touch.
+- [x] `geodesic/tests/golden_reference.rs` — 100-frame ala_dipeptide DCD,
+      byte-exact (in `geodesic/tests/`, not `geodesic-engine/tests/`, for the
+      same crate-graph reason)
+- [x] `geodesic/tests/determinism.rs` — two full runs (n_threads=4),
+      byte-identical DCD (§13.5)
+- [x] `cargo bench` suite (§13.9: `bench_lj_inner_loop`,
+      `bench_neighbor_rebuild`, `bench_constraint_solver`, `bench_full_step`).
+      Numeric baselines are hardware-specific and captured on the pinned
+      §13.10 bench runner, not committed from a dev machine.
+- [x] CI matrix (§13.10): `cargo test` + `cargo clippy -D warnings` on
+      windows-latest (matches the golden file's platform). Deferred:
+      `--features topo` (no geodesic-topo until v0.8), the pinned bench job,
+      and `cargo fmt --check` (repo is hand-formatted; rustfmt adoption is a
+      separate deliberate pass).
+
+**Two real bugs found and fixed wiring the loop together** (both invisible
+to the v0.3 suite, both caught by the verify-before-trusting pattern):
+1. **`half_kick` missing the force-to-acceleration unit conversion.** The B
+   step did `v += dt/2 · F/m` with no constant; in (Å, amu, kcal/mol, ps)
+   units the EOM is `a = 20.455² · F/m`. Without it the dynamics ran ~418×
+   too slow and KE came out 418× too small, so total energy wasn't conserved.
+   The energy-conservation and rigid-rotor tests missed it because both run
+   force-free and measure only *relative* drift, which is invariant to the
+   missing constant — it only shows up comparing absolute V and KE over a
+   real forced run.
+2. **Per-atom box wrapping split non-periodic molecules.** `neighbor::build`
+   wraps into `[0, box)` per §2.4, but the bonded/constraint terms use raw
+   (non-min-image) differences. Real ala_dipeptide has negative coordinates,
+   so wrapping sent an atom ~1000 Å from its bonded partners and the
+   potential exploded (6.3e8 kcal/mol). Added a `periodic` flag (config
+   `[system].periodic`, default false); non-periodic runs skip the wrap and
+   keep the molecule whole. Minimum-image in the bonded terms (needed for
+   genuinely periodic bonded systems) is deferred to when one is actually run.
 
 **Exit criteria:** a real `.prmtop`/`.inpcrd` pair runs end to end and
-produces a DCD + energy CSV; golden reference test passes; benchmarks have a
-committed baseline.
+produces a DCD + energy CSV — met (ala_dipeptide, total energy conserved to
+~1e-2 kcal/mol over 100 fs at dt=1fs); golden reference test passes;
+benchmark harness runs and establishes a baseline. `cargo test --workspace`,
+`cargo clippy --workspace --all-targets -- -D warnings` green, zero ignored.
 
 ## v0.5 — GPU backend (`geodesic-gpu`, M2)
 

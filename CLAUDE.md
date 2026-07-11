@@ -146,9 +146,11 @@ Status legend: [x] done and tested, [~] partial/broken (see memory.md), [ ] not 
 27. [x] `geodesic-engine/src/cpu_backend.rs` (CpuBackend impl: Rayon static
     strip decomposition, deterministic reduction)
 
-**Phase 4 — Binary (CLI) — NOT STARTED**
-28. [ ] `geodesic/Cargo.toml` (manifest exists, correct)
-29. [ ] `geodesic/src/main.rs` (`energy` + `run` subcommands) — still `fn main() {}`
+**Phase 4 — Binary (CLI) — DONE**
+28. [x] `geodesic/Cargo.toml` (lib + bin; criterion dev-dep + bench target)
+29. [x] `geodesic/src/lib.rs` + `src/main.rs` (`energy` + `run` subcommands,
+    full BAB+RATTLE loop, NaN guards, energy-drift monitor). Orchestration is
+    in the binary crate, not the engine, per the §9.3 crate graph.
 
 **Tests** — decided with Felipe: keep ad-hoc per-module test file names
 rather than consolidate to SAD.md §13's exact file list; every test §13
@@ -163,10 +165,11 @@ asks for exists somewhere, renaming was judged pure churn. Current files:
 `ala_dipeptide` (real AmberTools output, fetched from
 `choderalab/YankTools`, GPL-2.0 — see README's License section and
 memory.md for provenance; this is also why the project relicensed to
-GPL-2.0-or-later). Full literal §13.5 `determinism.rs` (byte-identical
-DCD across two runs) needs the v0.4 run loop — only component-level
-determinism is tested so far (`cpu_backend.rs`'s repeatability-at-fixed-T
-test).
+GPL-2.0-or-later). The full literal §13.5 `determinism.rs` (byte-identical
+DCD across two runs) and §13.7 `golden_reference.rs` now exist, in
+`geodesic/tests/` (not `geodesic-engine/tests/`, because they drive the
+run loop which needs `geodesic-io` — the §9.3 crate graph forbids the
+engine from depending on I/O).
 
 ---
 
