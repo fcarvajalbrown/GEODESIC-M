@@ -4,7 +4,7 @@
   <img src="assets/logo.png" alt="GEODESIC-M — a trajectory curving through a warped energy landscape" width="420">
 </p>
 
-[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![License: GPL v2 or later](https://img.shields.io/badge/License-GPLv2%2B-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/fcarvajalbrown/GEODESIC-M)](https://github.com/fcarvajalbrown/GEODESIC-M/releases)
 [![Rust](https://img.shields.io/badge/language-Rust-orange.svg)](https://www.rust-lang.org/)
 [![MSRV](https://img.shields.io/badge/rust-1.78%2B-orange.svg)](https://www.rust-lang.org/)
@@ -96,7 +96,14 @@ See [`docs/SAD.md §10`](docs/SAD.md) for the full I/O format specification.
 
 ## License
 
-See [LICENSE](LICENSE).
+GPL-2.0-or-later. See [LICENSE](LICENSE).
+
+Some test fixtures under `geodesic-engine/tests/fixtures/` and
+`geodesic-io/tests/fixtures/` (`ala_dipeptide.prmtop`/`.inpcrd`) are sourced
+from [choderalab/YankTools](https://github.com/choderalab/YankTools)
+(GPL-2.0), generated via AMBER `tleap` (`leaprc.ff96`,
+`sequence { ACE ALA NME }`). See the test files that load them for exact
+provenance.
 
 ---
 
