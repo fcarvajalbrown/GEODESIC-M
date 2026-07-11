@@ -1,6 +1,6 @@
 use geodesic_core::{AtomData, AtomMeta, BondedTopology, Element, SimState};
 use geodesic_engine::constraint::constrain_velocities;
-use geodesic_engine::integrator::{drift_and_constrain, half_kick};
+use geodesic_engine::integrator::{drift_and_constrain, half_kick, FORCE_TO_ACCEL_ANG_PER_PS2};
 
 fn empty_topology() -> BondedTopology {
     BondedTopology {
@@ -66,10 +66,11 @@ fn half_kick_applies_dt_half_over_mass_times_force() {
 
     half_kick(&mut state, &atoms, 0.5);
 
-    assert!((state.vel_x[0] - 10.0 * 0.5 / 2.0).abs() < 1e-14);
-    assert!((state.vel_z[0] - 1.0 * 0.5 / 2.0).abs() < 1e-14);
-    assert!((state.vel_x[1] - (-4.0) * 0.5 / 4.0).abs() < 1e-14);
-    assert!((state.vel_y[1] - 2.0 * 0.5 / 4.0).abs() < 1e-14);
+    let c = FORCE_TO_ACCEL_ANG_PER_PS2;
+    assert!((state.vel_x[0] - 10.0 * 0.5 / 2.0 * c).abs() < 1e-11);
+    assert!((state.vel_z[0] - 1.0 * 0.5 / 2.0 * c).abs() < 1e-11);
+    assert!((state.vel_x[1] - (-4.0) * 0.5 / 4.0 * c).abs() < 1e-11);
+    assert!((state.vel_y[1] - 2.0 * 0.5 / 4.0 * c).abs() < 1e-11);
 }
 
 #[test]

@@ -1,15 +1,22 @@
 use crate::constraint;
 use geodesic_core::{AtomData, BondedTopology, ConvergenceError, SimState};
 
+/// Converts F/m from kcal/(mol·Å·amu) to Å/ps² so a kick with dt in ps is
+/// dimensionally correct: 1 kcal/(mol·Å·amu) = 20.455² Å/ps², where 20.455 is
+/// the AKMA time constant the DCD and inpcrd velocity units also use. Without
+/// it the dynamics run on the wrong timescale and kinetic and potential energy
+/// are not comparable (V stays kcal/mol while KE would be 418.4x too small).
+pub const FORCE_TO_ACCEL_ANG_PER_PS2: f64 = 20.455 * 20.455;
+
 /// B: velocity half-kick, v <- v + dt_half * M^-1 * F (SAD.md §2.3). Uses
 /// whatever forces are currently in `state.force_{x,y,z}` — the caller is
 /// responsible for having evaluated them at the matching positions first.
 pub fn half_kick(state: &mut SimState, atoms: &AtomData, dt_half: f64) {
     for i in 0..state.pos_x.len() {
         let inv_m = 1.0 / atoms.mass[i];
-        state.vel_x[i] += dt_half * state.force_x[i] * inv_m;
-        state.vel_y[i] += dt_half * state.force_y[i] * inv_m;
-        state.vel_z[i] += dt_half * state.force_z[i] * inv_m;
+        state.vel_x[i] += dt_half * state.force_x[i] * inv_m * FORCE_TO_ACCEL_ANG_PER_PS2;
+        state.vel_y[i] += dt_half * state.force_y[i] * inv_m * FORCE_TO_ACCEL_ANG_PER_PS2;
+        state.vel_z[i] += dt_half * state.force_z[i] * inv_m * FORCE_TO_ACCEL_ANG_PER_PS2;
     }
 }
 
