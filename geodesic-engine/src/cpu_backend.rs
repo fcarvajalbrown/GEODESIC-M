@@ -33,6 +33,7 @@ pub struct CpuBackend {
     thread_buffers: Vec<ForceBuffer>,
     bonded_buffer: ForceBuffer,
     reduced: ForceBuffer,
+    potential_energy: f64,
 }
 
 fn zero_force_buffer(n: usize) -> ForceBuffer {
@@ -77,11 +78,36 @@ impl CpuBackend {
             thread_buffers: (0..n_threads).map(|_| zero_force_buffer(n)).collect(),
             bonded_buffer: zero_force_buffer(n),
             reduced: zero_force_buffer(n),
+            potential_energy: 0.0,
         }
     }
 
     pub fn n_threads(&self) -> usize {
         self.n_threads
+    }
+
+    /// Total potential energy V (bond + angle + dihedral + LJ) accumulated by
+    /// the most recent `compute_forces` call. Zero before the first call.
+    pub fn potential_energy(&self) -> f64 {
+        self.potential_energy
+    }
+
+    /// Read access to the moved-in atom data, so the BAB driver (the binary,
+    /// SAD.md §9.2) can compute kinetic energy and call
+    /// `constraint::constrain_velocities` without a second copy.
+    pub fn atoms(&self) -> &AtomData {
+        &self.atoms
+    }
+
+    /// Read access to the promoted topology, for the same reason as `atoms`.
+    pub fn topology(&self) -> &BondedTopology {
+        &self.topology
+    }
+
+    /// True when any atom has displaced far enough since the last rebuild that
+    /// the Verlet list may be stale (SAD.md §12.5's loop guard).
+    pub fn needs_rebuild(&self, state: &SimState) -> bool {
+        neighbor::needs_rebuild(state, &self.neighbor_list)
     }
 }
 
@@ -97,21 +123,22 @@ impl ComputeBackend for CpuBackend {
         self.bonded_buffer.fx.fill(0.0);
         self.bonded_buffer.fy.fill(0.0);
         self.bonded_buffer.fz.fill(0.0);
-        bonded::compute_bond_forces(
+        let mut potential = 0.0;
+        potential += bonded::compute_bond_forces(
             state,
             &self.topology,
             &mut self.bonded_buffer.fx,
             &mut self.bonded_buffer.fy,
             &mut self.bonded_buffer.fz,
         );
-        bonded::compute_angle_forces(
+        potential += bonded::compute_angle_forces(
             state,
             &self.topology,
             &mut self.bonded_buffer.fx,
             &mut self.bonded_buffer.fy,
             &mut self.bonded_buffer.fz,
         );
-        bonded::compute_dihedral_forces(
+        potential += bonded::compute_dihedral_forces(
             state,
             &self.topology,
             &mut self.bonded_buffer.fx,
@@ -133,27 +160,38 @@ impl ComputeBackend for CpuBackend {
         let n_threads = self.thread_buffers.len();
         let chunk = n_pairs.div_ceil(n_threads).max(1);
 
-        self.thread_buffers.par_iter_mut().enumerate().for_each(|(k, buf)| {
-            buf.fx.fill(0.0);
-            buf.fy.fill(0.0);
-            buf.fz.fill(0.0);
-            let start = (k * chunk).min(n_pairs);
-            let end = ((k + 1) * chunk).min(n_pairs);
-            if start < end {
-                nonbonded::compute_pair_forces(
-                    state,
-                    atoms,
-                    &pair_i[start..end],
-                    &pair_j[start..end],
-                    r_cutoff,
-                    r_switch,
-                    box_size,
-                    &mut buf.fx,
-                    &mut buf.fy,
-                    &mut buf.fz,
-                );
-            }
-        });
+        let mut thread_energy = vec![0.0; n_threads];
+        self.thread_buffers
+            .par_iter_mut()
+            .zip(thread_energy.par_iter_mut())
+            .enumerate()
+            .for_each(|(k, (buf, energy))| {
+                buf.fx.fill(0.0);
+                buf.fy.fill(0.0);
+                buf.fz.fill(0.0);
+                let start = (k * chunk).min(n_pairs);
+                let end = ((k + 1) * chunk).min(n_pairs);
+                if start < end {
+                    *energy = nonbonded::compute_pair_forces(
+                        state,
+                        atoms,
+                        &pair_i[start..end],
+                        &pair_j[start..end],
+                        r_cutoff,
+                        r_switch,
+                        box_size,
+                        &mut buf.fx,
+                        &mut buf.fy,
+                        &mut buf.fz,
+                    );
+                }
+            });
+        // Sum in fixed thread-index order, same determinism rationale as the
+        // force reduction below (SAD.md §7.2).
+        for &e in &thread_energy {
+            potential += e;
+        }
+        self.potential_energy = potential;
 
         // Fixed sequential reduction, thread-index order (SAD.md §7.2).
         self.reduced.fx.copy_from_slice(&self.bonded_buffer.fx);
