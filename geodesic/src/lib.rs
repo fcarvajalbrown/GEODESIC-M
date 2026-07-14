@@ -185,14 +185,6 @@ pub fn run_from_config_file(config_path: &Path) -> Result<RunSummary, SimError> 
 /// before the loop so E(0) is measured against a constraint-consistent
 /// velocity (see memory.md's energy-conservation lesson).
 fn run(config: Config, base: &Path) -> Result<RunSummary, SimError> {
-    if config.backend != Backend::Cpu {
-        return Err(SimError::Config(geodesic_core::ConfigError::InvalidValue {
-            key: "run.backend".to_string(),
-            value: format!("{:?}", config.backend).to_lowercase(),
-            reason: "only the \"cpu\" backend is available in this build (gpu lands in v0.5, hybrid in v0.6)".to_string(),
-        }));
-    }
-
     let prmtop_path = resolve(base, &config.prmtop);
     let inpcrd_path = resolve(base, &config.inpcrd);
     let trajectory_path = resolve(base, &config.trajectory);
@@ -230,7 +222,28 @@ fn run(config: Config, base: &Path) -> Result<RunSummary, SimError> {
         total_energy: config.total_energy,
     };
 
-    let mut backend: Box<dyn ComputeBackend> = Box::new(CpuBackend::new(atoms, topology, &params));
+    let mut backend: Box<dyn ComputeBackend> = match config.backend {
+        Backend::Cpu => Box::new(CpuBackend::new(atoms, topology, &params)),
+        #[cfg(feature = "gpu")]
+        Backend::Gpu => Box::new(geodesic_gpu::gpu_backend::GpuBackend::try_new(atoms, topology, &params)?),
+        #[cfg(not(feature = "gpu"))]
+        Backend::Gpu => {
+            return Err(geodesic_core::ConfigError::InvalidValue {
+                key: "run.backend".to_string(),
+                value: "gpu".to_string(),
+                reason: "this build was compiled without the `gpu` feature; rebuild with --features gpu".to_string(),
+            }
+            .into())
+        }
+        Backend::Hybrid => {
+            return Err(geodesic_core::ConfigError::InvalidValue {
+                key: "run.backend".to_string(),
+                value: "hybrid".to_string(),
+                reason: "the hybrid backend lands in v0.6".to_string(),
+            }
+            .into())
+        }
+    };
 
     let mut dcd = DcdWriter::create(&trajectory_path, n_atoms, config.frame_interval, dt)?;
     let mut csv = EnergyLogWriter::create(&energy_log_path, n_atoms)?;
