@@ -174,17 +174,26 @@ produces a DCD + energy CSV — met (ala_dipeptide, total energy conserved to
 benchmark harness runs and establishes a baseline. `cargo test --workspace`,
 `cargo clippy --workspace --all-targets -- -D warnings` green, zero ignored.
 
-## v0.5 — GPU backend (`geodesic-gpu`, M2)
+## v0.5 — GPU backend (`geodesic-gpu`, M2) — Done
 
-wgpu compute shaders for the non-bonded force loop (SAD.md §7.3): tiled
-force evaluation, `GpuBackend: ComputeBackend`, fixed-order tree reduction
-for determinism, `DeviceLost`/`ShaderCompilation`/`OutOfGpuMemory` mapped to
+wgpu compute shaders for the non-bonded force loop (SAD.md §7.3):
+`GpuBackend: ComputeBackend`, the CPU-derived exclusion-filtered pair set
+expanded into a per-atom CSR gather list (one thread per atom, no atomics,
+deterministic by construction), fixed-order energy reduction,
+`DeviceLost`/`ShaderCompilation`/`OutOfGpuMemory`/`NoAdapter` mapped to
 `BackendError` (§12.6). Gated behind the `gpu` feature — default CPU-only
-build is unaffected.
+build is unaffected. Three deviations from the SAD are recorded in ADRs
+0001-0004: Windows+Linux only (DX12/Vulkan, no Metal), the GPU path is f32
+(WGSL has no f64) with the CPU f64 path staying the correctness reference,
+the gather-CSR list in place of §7.3's literal "tiled all-pairs", and the
+new `geodesic-gpu -> geodesic-engine` crate edge.
 
-**Exit criteria:** `cargo build --features gpu` succeeds; GPU and CPU
-backends agree on forces for the fixture systems within floating-point
-tolerance; same-GPU/same-driver runs are bit-for-bit reproducible.
+**Exit criteria — met:** `cargo build --features gpu` green on Windows
+(wgpu 22.1.0) and built on Linux CI; GPU and CPU non-bonded forces agree at
+1e-4 relative (f32) on `lj_pair`, `water_box_4`, and the exclusion-heavy
+`ala_dipeptide`; two evaluations on the same adapter are bit-identical
+(`Vec<[f32;3]>` and energy bits). GPU tests are adapter-adaptive: they skip
+with a logged reason when no DX12/Vulkan adapter exists.
 
 ## v0.6 — Hybrid backend (M3)
 

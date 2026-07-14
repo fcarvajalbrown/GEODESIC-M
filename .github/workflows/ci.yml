@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  test-windows:
     # windows-latest matches the platform the golden reference DCD (§13.7) was
     # generated on; a 100-step trajectory is not byte-identical across OSes
     # (libm cos/acos/sqrt differ by an ULP and propagate), so the byte-exact
@@ -21,6 +21,37 @@ jobs:
         run: cargo test --workspace
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Build gpu feature
+        run: cargo build -p geodesic --features gpu
+      - name: Clippy gpu feature
+        run: cargo clippy -p geodesic --all-targets --features gpu -- -D warnings
+      - name: GPU tests (skip if no adapter)
+        run: cargo test -p geodesic-gpu -- --nocapture
+
+  test-linux:
+    # The byte-exact golden (§13.7) and determinism (§13.5) tests are
+    # windows-only (cross-OS DCD byte-identity is not guaranteed), so Linux
+    # runs the platform-independent crates plus the same GPU build/clippy/test
+    # gate. GPU tests self-skip when no DX12/Vulkan adapter is present.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+      - name: Test (platform-independent crates)
+        run: cargo test -p geodesic-core -p geodesic-engine -p geodesic-io -p geodesic-gpu
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Build gpu feature
+        run: cargo build -p geodesic --features gpu
+      - name: Clippy gpu feature
+        run: cargo clippy -p geodesic --all-targets --features gpu -- -D warnings
+      - name: GPU tests (skip if no adapter)
+        run: cargo test -p geodesic-gpu -- --nocapture
 
 # Deferred from SAD.md §13.10 until the features/hardware they need exist:
 #   - cargo test --features topo  -> geodesic-topo lands in v0.8

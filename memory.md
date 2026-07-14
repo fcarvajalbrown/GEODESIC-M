@@ -1,8 +1,40 @@
 # Session Handoff
 
-Last updated: 2026-07-10. **v0.4 shipped** (CLI binary, M1 complete). All
-of SAD.md §13's test suite now exists and passes. Next milestone is v0.5
-(GPU backend, `geodesic-gpu`) per ROADMAP.md.
+Last updated: 2026-07-14. **v0.5 shipped** (GPU backend, `geodesic-gpu`,
+M2). The non-bonded LJ loop now runs on the GPU via a wgpu compute shader
+behind the `gpu` feature; the default CPU-only build is untouched. Next
+milestone is v0.6 (hybrid backend, M3) per ROADMAP.md.
+
+## v0.5 (GPU backend) — what shipped
+
+- **New `geodesic-gpu` crate** (`GpuBackend: ComputeBackend`): GPU does
+  non-bonded LJ in f32; bonded forces, the constraint solve, and the
+  neighbor rebuild stay on CPU (reused from `geodesic-engine`).
+- **GPU is f32** (ADR 0002) — WGSL has no f64. The CPU f64 path stays the
+  correctness reference and the golden trajectory. GPU/CPU forces agree at
+  1e-4 relative on `lj_pair`/`water_box_4`/`ala_dipeptide`.
+- **CSR gather list** (ADR 0003): the CPU exclusion-filtered half pair list
+  is expanded to a full per-atom CSR (`offsets`/`neighbors`), one thread per
+  atom, no `atomicAdd` — deterministic by construction, bit-identical across
+  two evaluations on the same adapter.
+- **`geodesic-gpu -> geodesic-engine`** crate edge (ADR 0004); the engine
+  stays wgpu-free and feature-free.
+- **Platform Windows+Linux only** (ADR 0001), DX12/Vulkan, no Metal.
+  Resolved and built against **wgpu 22.1.0**. GPU tests are adapter-adaptive
+  (skip-with-log when no adapter).
+- **`ComputeBackend` gained** `potential_energy`/`atoms`/`topology`/
+  `needs_rebuild`/`n_threads` as trait methods (were `CpuBackend` inherent
+  methods); the run loop holds `Box<dyn ComputeBackend>` and selects
+  CPU/GPU from `run.backend` under the `gpu` feature. `BackendError` gained
+  `NoAdapter`.
+- **wgpu 22 API note:** `ComputePipelineDescriptor.entry_point` is `&str`
+  in wgpu 22 (it became `Option<&str>` in 23) — the one API-drift fixup the
+  plan flagged.
+- **CI** (`.github/workflows/ci.yml`) is now two jobs, windows + linux; both
+  build+clippy `--features gpu` and run the adapter-adaptive GPU tests. The
+  byte-exact golden/determinism tests stay windows-only (cross-OS DCD
+  byte-identity is not guaranteed), so Linux runs the platform-independent
+  crates plus the GPU gate, not the full workspace test.
 
 ## Current status
 
@@ -71,8 +103,9 @@ energy conserved (~1e-2 kcal/mol over 100 fs at dt=1fs).
 - **Binary is lib + bin**, run loop in `geodesic/src/lib.rs`; golden +
   determinism tests in `geodesic/tests/`. Forced by the §9.3 crate graph
   (engine can't depend on io).
-- **Only the CPU backend is wired**; `run.backend = "gpu"/"hybrid"` returns
-  an actionable config error (those are v0.5/v0.6).
+- **CPU and GPU backends are wired**; `run.backend = "gpu"` selects
+  `GpuBackend` under the `gpu` feature (an actionable config error without
+  the feature), `"hybrid"` still returns an actionable config error (v0.6).
 - **CI on windows-latest, test + clippy only.** fmt deferred (repo is
   hand-formatted, not rustfmt-clean — adopting rustfmt is a separate
   deliberate pass); `--features topo` deferred (no geodesic-topo until v0.8);
@@ -81,18 +114,21 @@ energy conserved (~1e-2 kcal/mol over 100 fs at dt=1fs).
   at default cutoffs (r_switch=10, r_cutoff=12) in a large non-periodic box,
   printed with the cutoffs so the number is reproducible.
 
-## Next priorities, in order (v0.5, M2)
+## Next priorities, in order (v0.6, M3 — hybrid backend)
 
-1. **`geodesic-gpu`**: wgpu compute shaders for the non-bonded loop, tiled
-   force eval, `GpuBackend: ComputeBackend`, fixed-order tree reduction for
-   determinism (SAD.md §7.3). Gated behind the `gpu` feature.
+1. **Hybrid backend** (SAD.md §7.4): keep positions/velocities resident
+   on-device across steps and minimize host<->device transfers around the
+   constraint solve. v0.5 re-uploads positions every `compute_forces` and
+   reads forces straight back — correctness-first, not transfer-optimized.
+   The GPU-side constraint convergence-reduce (§7.3) also lands here; the
+   solve stays on CPU in v0.5.
 2. When a genuinely periodic *bonded* system is first run, add minimum-image
    to the bonded forces + constraint solver per §2.4 (see bug 2 above) — the
-   one deferred correctness item from this cycle.
+   one deferred correctness item, and it matters for GPU too since the GPU
+   non-bonded already does min-image but the bonded terms do not.
 3. The O(N²) neighbor build (`bench_neighbor_rebuild` ~1.25 s at N=10k in
-   release) is the obvious perf target if M1-scale runs feel slow; the Verlet
-   list makes the *force* loop O(N) but the build itself is still a double
-   loop. Not a v0.4 blocker.
+   release) is the obvious perf target; the Verlet list makes the *force*
+   loop O(N) but the build itself is still a double loop.
 
 ## Things worth knowing that aren't in any file
 
