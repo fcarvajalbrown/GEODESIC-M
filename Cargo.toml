@@ -3,6 +3,7 @@ members = [
     "geodesic-core",
     "geodesic-io",
     "geodesic-engine",
+    "geodesic-gpu",
     "geodesic",
 ]
 resolver = "2"
@@ -12,6 +13,12 @@ resolver = "2"
 geodesic-core   = { path = "geodesic-core" }
 geodesic-io     = { path = "geodesic-io" }
 geodesic-engine = { path = "geodesic-engine" }
+geodesic-gpu    = { path = "geodesic-gpu" }
+
+# GPU backend (feature `gpu`, M2)
+wgpu     = "22"
+bytemuck = { version = "1", features = ["derive"] }
+pollster = "0.3"
 
 # Parallelism
 rayon = "1"

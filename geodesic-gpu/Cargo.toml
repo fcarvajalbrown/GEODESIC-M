@@ -1,0 +1,14 @@
+[package]
+name = "geodesic-gpu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geodesic-core = { workspace = true }
+geodesic-engine = { workspace = true }
+wgpu = { workspace = true }
+bytemuck = { workspace = true }
+pollster = { workspace = true }
+
+[dev-dependencies]
+geodesic-io = { workspace = true }

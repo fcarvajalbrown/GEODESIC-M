@@ -16,7 +16,7 @@ The GPU backend targets Windows and Linux only. wgpu is initialized with the DX1
 
 - `--features gpu` builds and runs on Windows (DX12, including the WARP software adapter) and Linux (Vulkan, including lavapipe). It will not produce a GPU adapter on macOS.
 - GPU tests are adapter-adaptive: they skip with a logged reason when no DX12/Vulkan adapter is present, so a macOS or headless machine sees a clean skip, not a failure.
-- Dependency version: SAD §14 pins `wgpu = "22"`. The version actually resolved and built against is recorded here once the build succeeds; if wgpu 22 fails to build on the current toolchain, the newest release is used and its number noted in this section.
+- Dependency version: SAD §14 pins `wgpu = "22"`. Resolved and built against **wgpu 22.1.0** (naga 22.1.0, wgpu-hal 22.0.0) on the current Rust toolchain (Windows); no bump was needed.
 
 ## Alternatives considered
 

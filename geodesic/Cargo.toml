@@ -7,7 +7,11 @@ edition = "2021"
 geodesic-core = { workspace = true }
 geodesic-io = { workspace = true }
 geodesic-engine = { workspace = true }
+geodesic-gpu = { workspace = true, optional = true }
 clap = { workspace = true }
+
+[features]
+gpu = ["dep:geodesic-gpu"]
 
 [dev-dependencies]
 criterion = "0.8"
