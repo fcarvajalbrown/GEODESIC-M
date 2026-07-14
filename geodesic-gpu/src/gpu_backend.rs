@@ -1,5 +1,5 @@
 use crate::device::{self, GpuContext};
-use crate::kernel::{NonbondedInput, NonbondedKernel};
+use crate::kernel::NonbondedKernel;
 use crate::neighbor_csr::build_csr;
 use geodesic_core::{
     AtomData, BackendError, BondedTopology, ComputeBackend, ConvergenceError, ForceBuffer,
@@ -14,9 +14,6 @@ pub struct GpuBackend {
     atoms: AtomData,
     topology: BondedTopology,
     neighbor_list: NeighborList,
-    offsets: Vec<u32>,
-    neighbors: Vec<u32>,
-    box_size: [f64; 3],
     max_constr_iter: u32,
     constr_tol: f64,
     reduced: ForceBuffer,
@@ -30,7 +27,7 @@ impl GpuBackend {
         params: &SimParams,
     ) -> Result<Self, BackendError> {
         let ctx = device::try_new()?;
-        let kernel = NonbondedKernel::new(&ctx)?;
+        let kernel = NonbondedKernel::new(&ctx, &atoms, params)?;
         let n = atoms.mass.len();
         let neighbor_list = NeighborList {
             pair_i: Vec::new(),
@@ -48,9 +45,6 @@ impl GpuBackend {
             atoms,
             topology,
             neighbor_list,
-            offsets: vec![0; n + 1],
-            neighbors: Vec::new(),
-            box_size: params.box_size,
             max_constr_iter: params.max_constr_iter,
             constr_tol: params.constr_tol,
             reduced: ForceBuffer { fx: vec![0.0; n], fy: vec![0.0; n], fz: vec![0.0; n] },
@@ -64,8 +58,7 @@ impl ComputeBackend for GpuBackend {
         self.neighbor_list = neighbor::build(state, params, &self.topology);
         let n = state.pos_x.len();
         let (off, nbr) = build_csr(&self.neighbor_list.pair_i, &self.neighbor_list.pair_j, n);
-        self.offsets = off;
-        self.neighbors = nbr;
+        self.kernel.upload_neighbors(&self.ctx, &off, &nbr);
     }
 
     fn compute_forces(&mut self, state: &SimState) -> &ForceBuffer {
@@ -77,19 +70,7 @@ impl ComputeBackend for GpuBackend {
         potential += bonded::compute_angle_forces(state, &self.topology, &mut self.reduced.fx, &mut self.reduced.fy, &mut self.reduced.fz);
         potential += bonded::compute_dihedral_forces(state, &self.topology, &mut self.reduced.fx, &mut self.reduced.fy, &mut self.reduced.fz);
 
-        let input = NonbondedInput {
-            pos_x: &state.pos_x,
-            pos_y: &state.pos_y,
-            pos_z: &state.pos_z,
-            sigma: &self.atoms.sigma,
-            epsilon: &self.atoms.epsilon,
-            offsets: &self.offsets,
-            neighbors: &self.neighbors,
-            r_cutoff: self.neighbor_list.r_cutoff,
-            r_switch: self.neighbor_list.r_switch,
-            box_size: self.box_size,
-        };
-        let (gpu_f, nb_energy) = self.kernel.evaluate(&self.ctx, &input);
+        let (gpu_f, nb_energy) = self.kernel.evaluate(&self.ctx, &state.pos_x, &state.pos_y, &state.pos_z);
         for (i, gf) in gpu_f.iter().enumerate() {
             self.reduced.fx[i] += gf[0] as f64;
             self.reduced.fy[i] += gf[1] as f64;
