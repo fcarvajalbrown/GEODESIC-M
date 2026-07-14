@@ -1,9 +1,52 @@
 # Session Handoff
 
-Last updated: 2026-07-14. **v0.5 shipped** (GPU backend, `geodesic-gpu`,
-M2). The non-bonded LJ loop now runs on the GPU via a wgpu compute shader
-behind the `gpu` feature; the default CPU-only build is untouched. Next
-milestone is v0.6 (hybrid backend, M3) per ROADMAP.md.
+Last updated: 2026-07-14. **v0.6 shipped** (hybrid/GPU transfer optimization,
+M3). The GPU backend now keeps its buffers resident across steps instead of
+reallocating them every `compute_forces`; `backend = "hybrid"` is a documented
+alias for `"gpu"`. Next milestone is v0.7 (GUI renderer scaffolding, M4 part 1)
+per ROADMAP.md. **v0.5 shipped** before it (GPU backend, `geodesic-gpu`, M2):
+the non-bonded LJ loop runs on the GPU via a wgpu compute shader behind the
+`gpu` feature; the default CPU-only build is untouched.
+
+## v0.6 (hybrid/GPU transfer optimization) — what shipped
+
+- **v0.5's `GpuBackend` was already the §7.4 split.** v0.6 added the transfer
+  layer v0.5 skipped on purpose: `NonbondedKernel` now owns persistent GPU
+  buffers (`kernel.rs` rewrite). sigma/epsilon uploaded once at construction;
+  CSR (offsets + growable neighbors) uploaded only on rebuild; positions written
+  each step via `queue.write_buffer` into an existing buffer; bind group
+  recreated only when the neighbors buffer grows past capacity. Buffers that get
+  `write_buffer` gained `COPY_DST` usage.
+- **`NonbondedKernel` API changed:** `new(ctx, atoms, params)` (was `new(ctx)`),
+  `evaluate(ctx, pos_x, pos_y, pos_z)` (was `evaluate(ctx, &NonbondedInput)`),
+  plus `upload_neighbors(ctx, offsets, neighbors)`. `NonbondedInput` removed.
+  `GpuBackend` dropped its host-side `offsets`/`neighbors`/`box_size` fields.
+  `GpuBackend::try_new` signature unchanged.
+- **The per-step position upload and force readback stay** — the constraint
+  solve is on the CPU (§7.4), so the host produces new positions every step and
+  they cannot be resident across the solve. v0.6 only eliminated buffer-alloc
+  churn and redundant static/CSR re-uploads, which is the honest scope.
+- **`backend = "hybrid"` resolves to the same optimized `GpuBackend`** under the
+  `gpu` feature (ADR 0005); same actionable "rebuild with --features gpu" error
+  without it. One GPU/hybrid backend, not two. Doc comment on `config::Backend`.
+- **ADR 0005** (hybrid is a gpu alias) and **ADR 0006** (GPU constraint
+  convergence-reduce dropped: net-negative transfer while the solve is on CPU;
+  resolves the §7.3/§7.4 contradiction). No trait or run-loop change except the
+  `Backend::Hybrid` match arm in `geodesic/src/lib.rs`. `nonbonded.wgsl`
+  untouched. Min-image in bonded/constraint terms deferred again (non-periodic
+  fixtures).
+- **Determinism holds** (ADR 0003) on the reused-buffer path: positions fully
+  overwritten each step, CSR each rebuild, no atomics — two evals bit-identical.
+- **Tests:** existing GPU tests updated to the new kernel API (now guard the
+  persistent path); new `geodesic/tests/gpu_hybrid_alias.rs` (hybrid == gpu DCD
+  byte-identical) and `gpu_trajectory.rs` (5-step gpu vs cpu final energy within
+  1e-4, the exit criterion). All verified on a real DX12 adapter (Windows), not
+  skipped. The spec's 1e-4 trajectory tolerance held over 5 steps — no
+  precision-accumulation finding needed.
+- **Optional bench** (`bench_full_step` gpu variant) was left as a non-exit
+  task; do it if a persistent-vs-v0.5 speedup number is wanted.
+- Spec/plan: `docs/superpowers/specs/2026-07-14-v0.6-hybrid-backend-design.md`,
+  `docs/superpowers/plans/2026-07-14-v0.6-hybrid-backend.md`.
 
 ## v0.5 (GPU backend) — what shipped
 
@@ -114,19 +157,23 @@ energy conserved (~1e-2 kcal/mol over 100 fs at dt=1fs).
   at default cutoffs (r_switch=10, r_cutoff=12) in a large non-periodic box,
   printed with the cutoffs so the number is reproducible.
 
-## Next priorities, in order (v0.6, M3 — hybrid backend)
+## Next priorities, in order (v0.7, M4 part 1 — GUI renderer scaffolding)
 
-1. **Hybrid backend** (SAD.md §7.4): keep positions/velocities resident
-   on-device across steps and minimize host<->device transfers around the
-   constraint solve. v0.5 re-uploads positions every `compute_forces` and
-   reads forces straight back — correctness-first, not transfer-optimized.
-   The GPU-side constraint convergence-reduce (§7.3) also lands here; the
-   solve stays on CPU in v0.5.
-2. When a genuinely periodic *bonded* system is first run, add minimum-image
+1. **v0.7 GUI renderer scaffolding** (SAD.md §7.5): `geodesic-gui` crate — wgpu
+   3D viewer, ring buffer consumer, atoms as instanced spheres, bonds as
+   cylinders, on a dedicated OS thread decoupled from the sim loop. Exit: a
+   completed `geodesic run` trajectory replays in the viewer (live streaming is
+   v0.8). Where the `gui`+`gpu` features are both on, share one
+   `Arc<wgpu::Device>` between the GPU backend and the renderer (SAD §9.4).
+2. **v0.6 done** (hybrid/GPU transfer optimization) — see the "v0.6 shipped"
+   section above. Transfer layer added to the already-§7.4 GpuBackend; hybrid is
+   a gpu alias; GPU convergence-reduce dropped. Optional `bench_full_step` gpu
+   variant still open if a speedup number is wanted.
+3. When a genuinely periodic *bonded* system is first run, add minimum-image
    to the bonded forces + constraint solver per §2.4 (see bug 2 above) — the
    one deferred correctness item, and it matters for GPU too since the GPU
    non-bonded already does min-image but the bonded terms do not.
-3. The O(N²) neighbor build (`bench_neighbor_rebuild` ~1.25 s at N=10k in
+4. The O(N²) neighbor build (`bench_neighbor_rebuild` ~1.25 s at N=10k in
    release) is the obvious perf target; the Verlet list makes the *force*
    loop O(N) but the build itself is still a double loop.
 

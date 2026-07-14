@@ -195,14 +195,41 @@ new `geodesic-gpu -> geodesic-engine` crate edge.
 (`Vec<[f32;3]>` and energy bits). GPU tests are adapter-adaptive: they skip
 with a logged reason when no DX12/Vulkan adapter exists.
 
-## v0.6 — Hybrid backend (M3)
+## v0.6 — Hybrid backend (M3) — Done
 
-CPU/GPU workload split per SAD.md §7.4: non-bonded on GPU, bonded forces +
-constraint solve + neighbor rebuild on CPU. Position/velocity handoff
-between devices around the constraint solve step.
+Transfer-optimized the GPU backend. v0.5's `GpuBackend` was already the §7.4
+workload split (non-bonded on GPU; bonded forces + constraint solve + neighbor
+rebuild on CPU in f64), so v0.6 is not a new engine — it is the transfer layer
+that v0.5 skipped on purpose. `NonbondedKernel` now owns its GPU buffers for
+the run's lifetime: sigma/epsilon uploaded once, the CSR uploaded only on a
+rebuild, positions written each step into an existing buffer via
+`queue.write_buffer`, and the bind group recreated only when the neighbors
+buffer has to grow. The per-step position upload and force readback stay — the
+constraint solve is on the CPU (§7.4), so the host makes new positions every
+step and they cannot be resident across the solve. No change to the
+`ComputeBackend` trait, the run loop, or the f64 CPU integration path.
 
-**Exit criteria:** hybrid backend matches pure-CPU and pure-GPU energy
-trajectories on the fixture suite within the same tolerance used in v0.5.
+`backend = "hybrid"` is now a documented alias for `"gpu"` (ADR 0005): one
+GPU/hybrid backend, not two, so the three-way exit criterion collapses to
+CPU ~= GPU. The SAD §7.3 GPU constraint convergence-reduce is dropped (ADR
+0006) — with the solve on the CPU the lambdas are already on the host, so a GPU
+reduce would be a net-negative transfer. Minimum-image in the bonded/constraint
+terms is deferred again: every v0.6 fixture is non-periodic, where it is a
+no-op.
+
+Design and plan: `docs/superpowers/specs/2026-07-14-v0.6-hybrid-backend-design.md`,
+`docs/superpowers/plans/2026-07-14-v0.6-hybrid-backend.md`.
+
+**Exit criteria — met:** the persistent-buffer GPU path matches the CPU
+reference — GPU vs CPU non-bonded forces at 1e-4 relative on `lj_pair`,
+`water_box_4`, `ala_dipeptide`; two GPU evaluations bit-identical on the same
+adapter (now over reused buffers); a 5-step BAB+RATTLE run on `ala_dipeptide`
+with `backend=gpu` matches the CPU run's final potential and kinetic energy to
+1e-4 relative; `backend=hybrid` produces byte-identical DCD to `backend=gpu`
+over a 10-step run. All GPU tests are adapter-adaptive (skip-with-log when no
+DX12/Vulkan adapter). Verified on a DX12 adapter (Windows); `cargo build`/
+`clippy --features gpu` green on Windows and Linux CI, full workspace test +
+clippy green with zero warnings.
 
 ## v0.7 — GUI renderer scaffolding (M4, part 1)
 
