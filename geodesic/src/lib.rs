@@ -235,11 +235,14 @@ fn run(config: Config, base: &Path) -> Result<RunSummary, SimError> {
             }
             .into())
         }
+        #[cfg(feature = "gpu")]
+        Backend::Hybrid => Box::new(geodesic_gpu::gpu_backend::GpuBackend::try_new(atoms, topology, &params)?),
+        #[cfg(not(feature = "gpu"))]
         Backend::Hybrid => {
             return Err(geodesic_core::ConfigError::InvalidValue {
                 key: "run.backend".to_string(),
                 value: "hybrid".to_string(),
-                reason: "the hybrid backend lands in v0.6".to_string(),
+                reason: "this build was compiled without the `gpu` feature; rebuild with --features gpu".to_string(),
             }
             .into())
         }

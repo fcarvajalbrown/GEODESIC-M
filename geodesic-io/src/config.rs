@@ -75,6 +75,9 @@ struct RawMonitoring {
     energy_drift_action: String,
 }
 
+/// Compute backend from `[run].backend`. `Hybrid` is a documented alias for
+/// `Gpu`: GEODESIC-M ships one GPU/hybrid backend (SAD.md §7.4, ADR 0005), so
+/// both resolve to the same optimized `GpuBackend` under the `gpu` feature.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
     Cpu,
