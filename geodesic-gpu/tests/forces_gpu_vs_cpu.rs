@@ -43,3 +43,33 @@ fn lj_pair_kernel_matches_cpu() {
 fn water_box_4_kernel_matches_cpu() {
     kernel_matches_cpu("water_box_4", 1e-4);
 }
+
+#[test]
+fn ala_dipeptide_full_backend_matches_cpu() {
+    use common::{clone_positions, load, params};
+    use geodesic_core::ComputeBackend;
+    let Some(_ctx) = device::context_or_skip() else { return };
+    let (state, atoms, topology) = load("ala_dipeptide");
+    let (state2, atoms2, topology2) = load("ala_dipeptide");
+    let p = params(state.pos_x.len());
+    let n = state.pos_x.len();
+
+    let mut s1 = clone_positions(&state);
+    let mut s2 = clone_positions(&state2);
+
+    let mut cpu = geodesic_engine::cpu_backend::CpuBackend::new(atoms, topology, &p);
+    let mut gpu = geodesic_gpu::gpu_backend::GpuBackend::try_new(atoms2, topology2, &p).unwrap();
+
+    cpu.build_neighbor_list(&mut s1, &p);
+    let fc = cpu.compute_forces(&s1).clone();
+    gpu.build_neighbor_list(&mut s2, &p);
+    let fg = gpu.compute_forces(&s2).clone();
+
+    for i in 0..n {
+        for (cpuv, gpuv) in [(fc.fx[i], fg.fx[i]), (fc.fy[i], fg.fy[i]), (fc.fz[i], fg.fz[i])] {
+            let diff = (cpuv - gpuv).abs();
+            let bound = 1e-4 * cpuv.abs().max(1.0);
+            assert!(diff <= bound, "atom {i}: cpu={cpuv}, gpu={gpuv}, diff={diff}");
+        }
+    }
+}
