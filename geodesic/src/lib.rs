@@ -230,7 +230,7 @@ fn run(config: Config, base: &Path) -> Result<RunSummary, SimError> {
         total_energy: config.total_energy,
     };
 
-    let mut backend = CpuBackend::new(atoms, topology, &params);
+    let mut backend: Box<dyn ComputeBackend> = Box::new(CpuBackend::new(atoms, topology, &params));
 
     let mut dcd = DcdWriter::create(&trajectory_path, n_atoms, config.frame_interval, dt)?;
     let mut csv = EnergyLogWriter::create(&energy_log_path, n_atoms)?;

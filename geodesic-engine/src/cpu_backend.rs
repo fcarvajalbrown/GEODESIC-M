@@ -82,33 +82,6 @@ impl CpuBackend {
         }
     }
 
-    pub fn n_threads(&self) -> usize {
-        self.n_threads
-    }
-
-    /// Total potential energy V (bond + angle + dihedral + LJ) accumulated by
-    /// the most recent `compute_forces` call. Zero before the first call.
-    pub fn potential_energy(&self) -> f64 {
-        self.potential_energy
-    }
-
-    /// Read access to the moved-in atom data, so the BAB driver (the binary,
-    /// SAD.md §9.2) can compute kinetic energy and call
-    /// `constraint::constrain_velocities` without a second copy.
-    pub fn atoms(&self) -> &AtomData {
-        &self.atoms
-    }
-
-    /// Read access to the promoted topology, for the same reason as `atoms`.
-    pub fn topology(&self) -> &BondedTopology {
-        &self.topology
-    }
-
-    /// True when any atom has displaced far enough since the last rebuild that
-    /// the Verlet list may be stale (SAD.md §12.5's loop guard).
-    pub fn needs_rebuild(&self, state: &SimState) -> bool {
-        neighbor::needs_rebuild(state, &self.neighbor_list)
-    }
 }
 
 impl ComputeBackend for CpuBackend {
@@ -222,5 +195,25 @@ impl ComputeBackend for CpuBackend {
 
     fn reduce_forces(&self) -> ForceBuffer {
         self.reduced.clone()
+    }
+
+    fn potential_energy(&self) -> f64 {
+        self.potential_energy
+    }
+
+    fn atoms(&self) -> &AtomData {
+        &self.atoms
+    }
+
+    fn topology(&self) -> &BondedTopology {
+        &self.topology
+    }
+
+    fn needs_rebuild(&self, state: &SimState) -> bool {
+        neighbor::needs_rebuild(state, &self.neighbor_list)
+    }
+
+    fn n_threads(&self) -> usize {
+        self.n_threads
     }
 }

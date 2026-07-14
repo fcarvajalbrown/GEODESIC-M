@@ -86,6 +86,8 @@ pub enum BackendError {
     ShaderCompilation(String),
     #[error("out of GPU memory")]
     OutOfGpuMemory,
+    #[error("no compatible GPU adapter found (DX12/Vulkan)")]
+    NoAdapter,
 }
 
 #[derive(Debug, Error)]
