@@ -1,12 +1,16 @@
 # Session Handoff
 
-Last updated: 2026-07-14. **v0.6 shipped** (hybrid/GPU transfer optimization,
-M3). The GPU backend now keeps its buffers resident across steps instead of
-reallocating them every `compute_forces`; `backend = "hybrid"` is a documented
-alias for `"gpu"`. Next milestone is v0.7 (GUI renderer scaffolding, M4 part 1)
-per ROADMAP.md. **v0.5 shipped** before it (GPU backend, `geodesic-gpu`, M2):
-the non-bonded LJ loop runs on the GPU via a wgpu compute shader behind the
-`gpu` feature; the default CPU-only build is untouched.
+Last updated: 2026-07-14. **v0.6 shipped and released** (hybrid/GPU transfer
+optimization, M3) — GitHub release `v0.6` is published. The GPU backend now
+keeps its buffers resident across steps instead of reallocating them every
+`compute_forces`; `backend = "hybrid"` is a documented alias for `"gpu"`. Next
+milestone is v0.7 (GUI renderer scaffolding, M4 part 1) per ROADMAP.md. Also
+this session: the README logo was refined and a full branding asset set added
+(see "Things worth knowing" below), and the README Usage section was corrected
+(it still claimed the CLI was a `fn main() {}` stub; it has worked since v0.4).
+**v0.5 shipped** before it (GPU backend, `geodesic-gpu`, M2): the non-bonded LJ
+loop runs on the GPU via a wgpu compute shader behind the `gpu` feature; the
+default CPU-only build is untouched.
 
 ## v0.6 (hybrid/GPU transfer optimization) — what shipped
 
@@ -146,9 +150,10 @@ energy conserved (~1e-2 kcal/mol over 100 fs at dt=1fs).
 - **Binary is lib + bin**, run loop in `geodesic/src/lib.rs`; golden +
   determinism tests in `geodesic/tests/`. Forced by the §9.3 crate graph
   (engine can't depend on io).
-- **CPU and GPU backends are wired**; `run.backend = "gpu"` selects
-  `GpuBackend` under the `gpu` feature (an actionable config error without
-  the feature), `"hybrid"` still returns an actionable config error (v0.6).
+- **CPU, GPU, and hybrid backends are wired**; `run.backend = "gpu"` (and its
+  alias `"hybrid"`, since v0.6) select the optimized `GpuBackend` under the
+  `gpu` feature, or return an actionable "rebuild with --features gpu" config
+  error without it.
 - **CI on windows-latest, test + clippy only.** fmt deferred (repo is
   hand-formatted, not rustfmt-clean — adopting rustfmt is a separate
   deliberate pass); `--features topo` deferred (no geodesic-topo until v0.8);
@@ -194,3 +199,19 @@ energy conserved (~1e-2 kcal/mol over 100 fs at dt=1fs).
   byte-identity of a 100-step MD trajectory is not guaranteed (libm
   cos/acos/sqrt differ by an ULP and propagate). That's why CI is
   windows-latest; regenerate the golden only on a deliberate physics change.
+- **Rendering SVG to PNG on this Windows box:** there is no ImageMagick (`convert`
+  on PATH is Windows' NTFS tool) and `cairosvg` fails (no native cairo DLL). Use
+  Node's `@resvg/resvg-js` instead — self-contained Rust renderer, handles
+  gradients and system-font text, no system deps. Build `.ico` from PNGs with
+  `png-to-ico` (CJS default-export quirk: `require(...).default` if not a
+  function). Install both into the session scratchpad, not the repo, so no
+  `node_modules` lands in the tree.
+- **Branding assets** live in `assets/`: hand-authored `logo.svg`/`logo-dark.svg`
+  (energy-landscape funnel + rust-orange geodesic + monospace wordmark; dark
+  variant is light text on a soft light-glow well), `logo-mark.svg` (square), and
+  a size-optimized `favicon.svg`. The PNGs (`logo.png` 1400w, `logo-mark.png`
+  512, `logo-dark.png`, `apple-touch-icon.png` 180, `favicon-16/32/48.png`) and
+  `favicon.ico` are all generated FROM those SVGs (resvg-js). SVGs are the source
+  of truth; regenerate the rasters if an SVG changes. README shows `logo.png`
+  (light) / `logo-dark.png` (dark) via a `<picture>` element. Accent color
+  `#a8481f` light, `#d1673a` dark.
