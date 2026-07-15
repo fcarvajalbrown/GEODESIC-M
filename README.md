@@ -97,6 +97,28 @@ See [`docs/SAD.md §10`](docs/SAD.md) for the full I/O format specification.
 
 ---
 
+## Branding assets
+
+Logos and icons live in [`assets/`](assets/): `logo.svg` / `logo.png` (light
+theme) and `logo-dark.svg` / `logo-dark.png` (dark theme, swapped in
+automatically on GitHub via a `<picture>` element), the square `logo-mark.svg`
+/ `logo-mark.png`, and a favicon set — `favicon.svg`, `favicon.ico`
+(16/32/48), `favicon-16.png` / `-32.png` / `-48.png`, and
+`apple-touch-icon.png`. The PNGs and `.ico` are generated from the SVG sources
+with resvg-js.
+
+There is no web page in the repo yet (the viewer is native wgpu, landing in
+v0.7), so the favicons are not referenced anywhere. When a docs site or GitHub
+Pages page exists, wire them into its `<head>`:
+
+```html
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+```
+
+---
+
 ## License
 
 GPL-2.0-or-later. See [LICENSE](LICENSE).
