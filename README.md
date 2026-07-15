@@ -1,7 +1,10 @@
 # GEODESIC-M
 
 <p align="center">
-  <img src="assets/logo.png" alt="GEODESIC-M — a geodesic trajectory descending a warped energy landscape" width="420">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.png">
+    <img src="assets/logo.png" alt="GEODESIC-M — a geodesic trajectory descending a warped energy landscape" width="420">
+  </picture>
 </p>
 
 [![License: GPL v2 or later](https://img.shields.io/badge/License-GPLv2%2B-blue.svg)](LICENSE)

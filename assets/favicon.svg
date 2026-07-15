@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="GEODESIC-M favicon: a geodesic descending a warped energy landscape">
+  <title>GEODESIC-M</title>
+  <g fill="none" stroke="#1c1e22" stroke-width="2.2" stroke-linecap="round">
+    <path d="M 8,14 Q 32,17 56,15" opacity="0.4"/>
+    <path d="M 8,26 Q 32,33 56,27" opacity="0.55"/>
+    <path d="M 8,38 Q 32,48 56,39" opacity="0.7"/>
+    <path d="M 8,50 Q 32,60 56,51" opacity="0.85"/>
+  </g>
+  <path d="M 11,16 C 22,26 26,40 34,45 C 42,50 48,50 53,52"
+        fill="none" stroke="#a8481f" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="11" cy="16" r="3.8" fill="#a8481f"/>
+  <circle cx="53" cy="52" r="3.8" fill="#a8481f"/>
+</svg>
