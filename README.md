@@ -77,21 +77,44 @@ cargo build --release --features gui     # 3D viewer
 
 ---
 
-## Usage (M1) — target interface, not yet implemented
+## Usage
 
-The CLI binary is currently a stub (`fn main() {}`) — this is the
-interface v0.4 will ship, not something you can run today:
+M1 is complete: the CPU headless engine runs end to end (v0.4). An optional
+GPU/hybrid non-bonded backend ships behind the `gpu` feature (v0.5–v0.6).
+
+Build the CPU-only binary:
 
 ```sh
-# Compute total energy — required before a run (defines the Jacobi metric)
-geodesic energy protein.prmtop protein.inpcrd
+cargo build --release -p geodesic
+```
 
-# Run simulation
+Compute the initial potential energy. Its `total` fills the `total_energy`
+field in `config.toml`, which defines the Jacobi metric:
+
+```sh
+geodesic energy protein.prmtop protein.inpcrd
+```
+
+It prints a per-term breakdown (bond, angle, dihedral, non-bonded, total).
+Then run a simulation:
+
+```sh
 geodesic run config.toml
 ```
 
+Without a separate build step, either subcommand also runs via
+`cargo run --release -p geodesic -- run config.toml`.
+
 Inputs: AMBER `.prmtop` + `.inpcrd` + `config.toml`
 Outputs: `output.dcd` (trajectory), `energy.csv` (per-step energies)
+
+The compute backend is chosen in `config.toml` (`[run] backend = "cpu"`,
+`"gpu"`, or `"hybrid"`). The `"gpu"` and `"hybrid"` backends require a GPU build
+and a DX12/Vulkan adapter; `"hybrid"` is an alias for `"gpu"`:
+
+```sh
+cargo build --release -p geodesic --features gpu
+```
 
 See [`docs/SAD.md §10`](docs/SAD.md) for the full I/O format specification.
 
